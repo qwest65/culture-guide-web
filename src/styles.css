@@ -574,3 +574,61 @@ a.button {
 .me.has-heading .me-arrow {
   opacity: 1;
 }
+
+/* ---------- Стартовая страница ---------- */
+
+.features {
+  list-style: none;
+  margin: 8px 0 8px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.features li {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding-left: 14px;
+  border-left: 3px solid var(--mark);
+}
+.features b {
+  font-family: var(--font-head);
+  font-size: 1.05rem;
+}
+.features span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+@media (min-width: 640px) {
+  .features {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.city-card {
+  gap: 8px;
+  padding: 20px;
+}
+.city-title {
+  font-size: 1.7rem;
+}
+.highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.city-open {
+  margin-top: 4px;
+  color: var(--link);
+  font-weight: 600;
+}
+.geo-button {
+  margin: 0;
+  padding-left: 0;
+}

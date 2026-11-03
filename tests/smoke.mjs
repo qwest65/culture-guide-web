@@ -62,7 +62,7 @@ try {
   });
 
   await step('город определяется по геопозиции', async () => {
-    await page.getByRole('button', { name: /Определить город/ }).click();
+    await page.getByRole('button', { name: /Определить мой город/ }).click();
     await page.getByRole('heading', { level: 1, name: 'Троицк' }).waitFor();
     if (!page.url().endsWith('#/troitsk')) throw new Error(`адрес ${page.url()}`);
     await page.screenshot({ path: 'test-results/02-city.png', fullPage: true });

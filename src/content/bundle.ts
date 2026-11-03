@@ -50,8 +50,12 @@ export type CityIndexEntry = {
   region: string;
   center: LatLonT;
   bbox: CityT['bbox'];
+  /** Вступление о городе — для стартовой страницы. */
+  intro: string;
   places: number;
   routes: number;
+  /** Главные достопримечательности: чаще всего входят в маршруты. */
+  highlights: string[];
   /** Имя файла города с хэшем содержимого — браузер не застрянет на старой версии. */
   bundle: string;
 };

@@ -11,7 +11,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { AudioManifest, CitiesIndex, Voice } from '../src/content/schema';
-import { BUNDLE_FORMAT, type CitiesIndexData, type CityIndexEntry } from '../src/content/bundle';
+import { BUNDLE_FORMAT, type CitiesIndexData, type CityBundle, type CityIndexEntry } from '../src/content/bundle';
 import { buildCity, textHash } from './content';
 import { countOf } from '../src/lib/format';
 
@@ -49,6 +49,16 @@ for (const [key, text] of Object.entries(voice.data.phrases)) {
   }
   if (rec.text_hash !== textHash(text)) warnings.push(`content/voice.json: фраза «${key}» изменилась после озвучки`);
   phrases[key] = `${file}?v=${rec.text_hash}`;
+}
+
+/** Главные места города: те, что входят в большее число маршрутов. */
+function highlights(b: CityBundle, n = 5): string[] {
+  const count = new Map<string, number>();
+  for (const r of b.routes) for (const s of r.stops) count.set(s, (count.get(s) ?? 0) + 1);
+  return [...b.places]
+    .sort((x, y) => (count.get(y.id) ?? 0) - (count.get(x.id) ?? 0))
+    .slice(0, n)
+    .map((p) => p.name);
 }
 
 const index = CitiesIndex.safeParse(readJson(join(CONTENT, 'cities.json')));
@@ -108,8 +118,10 @@ for (const id of index.data.cities) {
     region: bundle.city.region,
     center: bundle.city.center,
     bbox: bundle.city.bbox,
+    intro: bundle.city.intro,
     places: bundle.places.length,
     routes: bundle.routes.length,
+    highlights: highlights(bundle),
     bundle: name,
   });
 }

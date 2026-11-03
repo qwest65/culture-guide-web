@@ -56,21 +56,68 @@ export function Home() {
     <>
       <TopBar />
       <main id="main" class="page">
-        <PageTitle eyebrow="Аудиопутеводитель">Куда идём?</PageTitle>
-        <p class="lead">Тематические маршруты и рассказы о городе — прямо в браузере телефона, без установки.</p>
+        <PageTitle>Путеводитель по историческим городам России</PageTitle>
+        <p class="lead">
+          Достопримечательности, их история и пешеходные маршруты по старым улицам. Откройте на телефоне — и
+          идите: гид проведёт по маршруту и расскажет о каждом месте, когда вы к нему подойдёте.
+        </p>
+
+        <ul class="features" role="list">
+          <li>
+            <b>Достопримечательности</b>
+            <span>История, даты, архитекторы и источники по каждому месту</span>
+          </li>
+          <li>
+            <b>Маршруты</b>
+            <span>Тематические прогулки по улицам, с навигатором и временем в пути</span>
+          </li>
+          <li>
+            <b>Рассказ на месте</b>
+            <span>Подошли к объекту — гид рассказывает о нём голосом</span>
+          </li>
+        </ul>
 
         {cities.state === 'loading' && <Loading />}
         {cities.state === 'error' && <LoadError retry={retry} />}
         {cities.state === 'ready' && (
           <>
+            <h2 class="section-title">Города</h2>
+            <ul class="cards" role="list">
+              {[...cities.value.cities]
+                .sort((a, b) => Number(b.id === last) - Number(a.id === last))
+                .map((c) => (
+                  <li key={c.id}>
+                    <a class="card city-card" href={href.city(c.id)}>
+                      <span class="card-sub">{c.region}</span>
+                      <span class="card-title city-title">{c.name}</span>
+                      <span class="card-text">{c.intro}</span>
+                      {c.highlights.length > 0 && (
+                        <span class="highlights">
+                          {c.highlights.map((h) => (
+                            <span key={h} class="chip">
+                              {h}
+                            </span>
+                          ))}
+                        </span>
+                      )}
+                      <span class="card-meta">
+                        {countOf(c.places, 'достопримечательность', 'достопримечательности', 'достопримечательностей')} ·{' '}
+                        {countOf(c.routes, 'маршрут', 'маршрута', 'маршрутов')}
+                      </span>
+                      <span class="city-open">Открыть путеводитель →</span>
+                    </a>
+                  </li>
+                ))}
+            </ul>
+
             <div class="geo">
               <button
                 type="button"
-                class="button button-primary"
+                class="link-button geo-button"
                 onClick={() => locate(cities.value.cities)}
                 disabled={geo.state === 'asking'}
               >
-                {geo.state === 'asking' ? 'Определяем…' : 'Определить город по геопозиции'}
+                {geo.state === 'asking' ? 'Определяем…' : 'Определить мой город по геопозиции'}
               </button>
               <div aria-live="polite">
                 {geo.state === 'failed' && <p class="note">{geo.reason}</p>}
@@ -88,25 +135,6 @@ export function Home() {
                 )}
               </div>
             </div>
-
-            <h2 class="section-title">Города</h2>
-            <ul class="cards" role="list">
-              {[...cities.value.cities]
-                .sort((a, b) => Number(b.id === last) - Number(a.id === last))
-                .map((c) => (
-                  <li key={c.id}>
-                    <a class="card" href={href.city(c.id)}>
-                      <span class="card-title">{c.name}</span>
-                      <span class="card-sub">{c.region}</span>
-                      <span class="card-meta">
-                        {countOf(c.routes, 'маршрут', 'маршрута', 'маршрутов')} ·{' '}
-                        {countOf(c.places, 'объект', 'объекта', 'объектов')}
-                        {c.id === last && ' · вы смотрели недавно'}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-            </ul>
           </>
         )}
       </main>

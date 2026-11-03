@@ -1,100 +1,29 @@
-# Культурный гид на домашнем сервере (Caddy)
+# Гид на своём сервере
 
-Сайт — статические файлы. Готовую проверенную сборку workflow **Deploy** кладёт в ветку `gh-pages`.
-Сервер раз в 2 минуты сам забирает её с GitHub (`update-site.sh`), а Caddy отдаёт по HTTPS.
-Снаружи не нужно открывать ничего, кроме уже открытых 80/443, а паролей от сервера в GitHub нет.
+Сайт гида — статические файлы. Готовую проверенную сборку workflow **Deploy** кладёт в ветку `gh-pages`;
+сервер сам забирает её оттуда — снаружи на сервер ничего заливать не нужно, паролей от сервера в GitHub нет.
 
 | Файл | Что это |
 |---|---|
-| `Caddyfile.snippet` | блок сайта для вашего Caddyfile |
-| `update-site.sh` | забирает свежую сборку из `gh-pages` |
-| `culture-guide-update.service`, `.timer` | запуск обновления раз в 2 минуты (systemd) |
+| `update-site.sh` | забирает свежую сборку из `gh-pages` в папку сайта (по расписанию, раз в 2 минуты) |
+| `npm/static.conf` | настройка nginx, который раздаёт статические сайты по имени домена из `/srv/sites/<домен>/`: свежие `index.html` и список городов, вечный кэш для файлов с хэшем, тип `.mjs` |
 
-## 1. Поддомен
+Как именно устроен сервер (входная дверь, сертификаты, другие сервисы) — в закрытом репозитории
+описания сервера, не здесь: этот репозиторий публичный.
 
-`culture-guide.mooo.com` — поддомен FreeDNS (afraid.org), CNAME на `h2nexus.netcraze.pro`
-(адрес роутера, как у остальных сервисов). Проверка:
-
-```bash
-nslookup culture-guide.mooo.com
-```
-
-Должен вернуться внешний IP дома.
-
-## 2. Файлы сайта
-
-На сервере (нужен `git`: `sudo apt install git`):
+## Кратко: как поставить гид на сервер со статическим nginx
 
 ```bash
-sudo mkdir -p /srv/sites
-sudo curl -fsSL -o /usr/local/bin/culture-guide-update https://raw.githubusercontent.com/qwest65/culture-guide-web/claude/culture-guide-city-schema-4v0qq3/deploy/home-server/update-site.sh
-sudo chmod +x /usr/local/bin/culture-guide-update
-sudo /usr/local/bin/culture-guide-update
-ls /srv/sites/culture-guide
-```
-
-В конце должны быть видны `index.html`, `assets`, `map`, `audio`, `photos`.
-
-## 3. Caddy
-
-Добавьте блок из `Caddyfile.snippet` в ваш Caddyfile (обычно `/etc/caddy/Caddyfile`). Затем:
-
-```bash
-sudo caddy validate --config /etc/caddy/Caddyfile
+git clone --depth 1 --branch gh-pages https://github.com/qwest65/culture-guide-web.git /srv/sites/<домен>
 ```
 
 ```bash
-sudo systemctl reload caddy
-```
-
-**Если Caddy в Docker:** папку сайта нужно подключить в контейнер — в `docker-compose.yml`
-у сервиса caddy в `volumes:` добавить `- /srv/sites:/srv/sites:ro` и пересоздать контейнер
-(`docker compose up -d caddy`). Перезагрузка настроек: `docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile`.
-
-## 4. Автообновление
-
-```bash
-sudo curl -fsSL -o /etc/systemd/system/culture-guide-update.service https://raw.githubusercontent.com/qwest65/culture-guide-web/claude/culture-guide-city-schema-4v0qq3/deploy/home-server/culture-guide-update.service
-sudo curl -fsSL -o /etc/systemd/system/culture-guide-update.timer https://raw.githubusercontent.com/qwest65/culture-guide-web/claude/culture-guide-city-schema-4v0qq3/deploy/home-server/culture-guide-update.timer
-```
-
-В `.service` обновление запускается от пользователя `caddy` (он есть, если Caddy установлен пакетом).
-Отдайте ему папку сайта и включите таймер:
-
-```bash
-sudo chown -R caddy:caddy /srv/sites/culture-guide
+install -m 755 update-site.sh /usr/local/bin/culture-guide-update
 ```
 
 ```bash
-sudo systemctl daemon-reload && sudo systemctl enable --now culture-guide-update.timer
+( crontab -l 2>/dev/null; echo "*/2 * * * * /usr/local/bin/culture-guide-update /srv/sites/<домен> >/dev/null 2>&1" ) | crontab -
 ```
 
-Если Caddy в Docker и пользователя `caddy` нет — в `.service` замените `User=caddy` на своего пользователя
-и сделайте `chown` на него.
-
-Проверка: `systemctl list-timers culture-guide-update.timer` — время следующего запуска;
-`journalctl -u culture-guide-update -n 20` — что скачивалось.
-
-## 5. Проверка
-
-Откройте `https://<поддомен>/` на телефоне. Первое открытие может занять до минуты:
-Caddy получает сертификат Let's Encrypt.
-
-С компьютера:
-
-```bash
-curl -sI https://culture-guide.mooo.com/ | head -5
-```
-
-```bash
-curl -sI https://culture-guide.mooo.com/map/troitsk/style.json | grep -i cache-control
-```
-
-Первая команда — `HTTP/2 200`, вторая — `max-age=86400`.
-
-## Если что-то пошло не так
-
-- **Сертификат не выдаётся** (`journalctl -u caddy -n 50`): проверьте, что поддомен указывает на ваш IP
-  и что порты 80/443 проброшены на сервер.
-- **Сайт старый:** `sudo systemctl start culture-guide-update` и посмотрите журнал.
-- **Откатиться:** сайт продолжает работать на GitHub Pages — https://qwest65.github.io/culture-guide-web/
+Дальше — домен и HTTPS на стороне веб-сервера, который смотрит в интернет.
+Если `raw.githubusercontent.com` не отвечает, файлы удобнее брать через `git clone` этого репозитория.

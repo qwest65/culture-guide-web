@@ -49,9 +49,8 @@
 Workflow **Deploy** после каждого изменения в `main` и в рабочей ветке прогоняет все проверки
 (включая smoke-тест в браузере) и кладёт собранный сайт в ветку `gh-pages`. Оттуда его берут:
 
-- **основной адрес https://culture-guide.mooo.com/** — домашний сервер: раз в 2 минуты забирает
-  `gh-pages` (`deploy/home-server/update-site.sh`), раздаёт контейнер nginx через панель
-  Nginx Proxy Manager, HTTPS — Caddy. Как устроено и как повторить — `deploy/home-server/`;
+- **основной адрес https://culture-guide.mooo.com/** — свой сервер: раз в 2 минуты забирает
+  `gh-pages` (`deploy/home-server/update-site.sh`) и раздаёт статическим nginx (`deploy/home-server/npm/static.conf`);
 - **запасная копия** — GitHub Pages, https://qwest65.github.io/culture-guide-web/.
 
 | Workflow | Когда | Что делает |

@@ -1,9 +1,0 @@
-[Unit]
-Description=Культурный гид: забрать свежую сборку с GitHub
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-Type=oneshot
-User=caddy
-ExecStart=/usr/local/bin/culture-guide-update

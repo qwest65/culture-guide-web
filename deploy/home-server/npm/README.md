@@ -25,6 +25,13 @@ curl -fsSLO https://raw.githubusercontent.com/qwest65/culture-guide-web/claude/c
 docker compose up -d && docker compose ps
 ```
 
+Если скачивание обрывается с `connection timed out` (Docker Hub из России работает нестабильно),
+возьмите образ панели через зеркало Google и повторите `docker compose up -d`:
+
+```bash
+docker pull mirror.gcr.io/jc21/nginx-proxy-manager:latest && docker tag mirror.gcr.io/jc21/nginx-proxy-manager:latest jc21/nginx-proxy-manager:latest
+```
+
 Оба контейнера (`npm`, `static-sites`) — в состоянии `running`. С компьютера дома откройте
 `http://192.168.0.91:81`, при первом входе панель попросит создать учётную запись администратора.
 

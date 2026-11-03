@@ -55,15 +55,23 @@ jobs:
           python-version: "3.12"
       - run: pip install numpy requests lameenc
       - name: Ключ
+        id: key
         env:
           YANDEX_SPEECHKIT_KEY: ${{ secrets.YANDEX_SPEECHKIT_KEY }}
         run: |
           if [ -z "$YANDEX_SPEECHKIT_KEY" ]; then
-            echo "::error::Секрет YANDEX_SPEECHKIT_KEY не задан: Settings → Secrets and variables → Actions."
+            msg="Секрет YANDEX_SPEECHKIT_KEY не задан: Settings → Secrets and variables → Actions."
+            # При push — только предупреждение, чтобы правка текста не давала красный крестик.
+            if [ "${{ github.event_name }}" = "push" ]; then
+              echo "::warning::$msg Озвучка пропущена."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "::error::$msg"
             exit 1
           fi
       - name: Образцы голосов
-        if: inputs.mode == 'samples'
+        if: inputs.mode == 'samples' && steps.key.outputs.skip != 'true'
         env:
           YANDEX_SPEECHKIT_KEY: ${{ secrets.YANDEX_SPEECHKIT_KEY }}
         run: python3 tools/generate_audio.py --samples samples
@@ -73,13 +81,13 @@ jobs:
           name: voice-samples
           path: samples/
       - name: Озвучка
-        if: inputs.mode != 'samples'
+        if: inputs.mode != 'samples' && steps.key.outputs.skip != 'true'
         env:
           YANDEX_SPEECHKIT_KEY: ${{ secrets.YANDEX_SPEECHKIT_KEY }}
         run: python3 tools/generate_audio.py ${{ inputs.city }} --voice ${{ inputs.voice || 'ermil' }} ${{ inputs.mode == 'all' && '--all' || '' }}
       - name: Коммит
         id: commit
-        if: inputs.mode != 'samples'
+        if: inputs.mode != 'samples' && steps.key.outputs.skip != 'true'
         run: |
           git add -A public/audio
           if git diff --cached --quiet; then

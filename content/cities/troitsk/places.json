@@ -30,13 +30,19 @@
         {
           "title": "Википедия: Троицк (Челябинская область)",
           "url": "https://ru.wikipedia.org/wiki/Троицк_(Челябинская_область)"
+        },
+        {
+          "title": "Троицкий краеведческий музей",
+          "url": "https://www.culture.ru/institutes/20933/troickii-kraevedcheskii-muzei",
+          "publisher": "Культура.РФ"
         }
       ],
       "photos": [],
       "editorial": {
         "location_source": "Android-каталог «Культурный гид»",
         "todo": []
-      }
+      },
+      "people": []
     },
     {
       "id": "torgovye-ryady",
@@ -61,14 +67,21 @@
           "event": "Построено здание"
         }
       ],
-      "sources": [],
+      "sources": [
+        {
+          "title": "Торговые ряды (Троицк)",
+          "url": "https://znanierussia.ru/articles/Торговые_ряды_(Троицк)",
+          "publisher": "Знание.Вики"
+        }
+      ],
       "photos": [],
       "editorial": {
         "location_source": "Android-каталог «Культурный гид»",
         "todo": [
-          "Координата Android-каталога (у адреса ул. Климова, 5А) расходится с координатой «Маленького каравана» примерно на 200 м — проверить на месте, какая верная"
+          "Адрес ул. Климова, 5а подтверждён источниками, координата у адреса; координата «Маленького каравана» в 200 м от неё, вероятно, ошибочна — проверить на месте. Датировка в источниках: 1866–1868"
         ]
-      }
+      },
+      "people": []
     },
     {
       "id": "passazh-yaushevykh",
@@ -106,7 +119,13 @@
       "heritage": {
         "level": "federal"
       },
-      "sources": [],
+      "sources": [
+        {
+          "title": "Пассаж Яушевых (Троицк)",
+          "url": "https://cyclowiki.org/wiki/Пассаж_Яушевых_(Троицк)",
+          "publisher": "Циклопедия"
+        }
+      ],
       "photos": [],
       "editorial": {
         "location_source": "Маленький караван: проверено на месте, сентябрь 2026",
@@ -140,12 +159,26 @@
           "event": "Строительство завершено"
         }
       ],
-      "sources": [],
+      "sources": [
+        {
+          "title": "Кафедральный собор Троицы Живоначальной, Троицк",
+          "url": "https://sobory.ru/photo/111724",
+          "publisher": "Народный каталог православной архитектуры (sobory.ru)"
+        },
+        {
+          "title": "Храмы Троицка",
+          "url": "https://www.komandirovka.ru/sights/troick/temples/",
+          "publisher": "Командировка.ру"
+        }
+      ],
       "photos": [],
       "editorial": {
         "location_source": "Маленький караван: проверено на месте, сентябрь 2026",
-        "todo": []
-      }
+        "todo": [
+          "Год закладки 1754 в найденных источниках не встречается (подтверждено завершение в 1762) — проверить"
+        ]
+      },
+      "people": []
     },
     {
       "id": "kamen-troitskoy-kreposti",
@@ -184,7 +217,18 @@
           "role": "founder"
         }
       ],
-      "sources": [],
+      "sources": [
+        {
+          "title": "Памятный камень в честь основания Троицкой крепости",
+          "url": "https://www.komandirovka.ru/sights/troick/pamyatnyiy-kamen-v-chest-osnovaniya-troitskoy-kreposti/",
+          "publisher": "Командировка.ру"
+        },
+        {
+          "title": "Троицк — самый солнечный город Урала",
+          "url": "https://uraloved.ru/troitsk",
+          "publisher": "Ураловед"
+        }
+      ],
       "photos": [],
       "editorial": {
         "location_source": "Маленький караван: проверено на месте, сентябрь 2026",
@@ -209,6 +253,10 @@
       ],
       "people": [
         {
+          "name": "Максим Ведерников",
+          "role": "sculptor"
+        },
+        {
           "name": "Фёдор Никифорович Плевако",
           "role": "subject",
           "years": "1842–1908"
@@ -218,13 +266,18 @@
         {
           "title": "Википедия: Плевако, Фёдор Никифорович",
           "url": "https://ru.wikipedia.org/wiki/Плевако,_Фёдор_Никифорович"
+        },
+        {
+          "title": "Фёдора Плевако увековечили в граните и бронзе",
+          "url": "https://www.advgazeta.ru/arhivnye-zapisi/fyedora-plevako-uvekovechili-v-granite-i-bronze/",
+          "publisher": "Адвокатская газета"
         }
       ],
       "photos": [],
       "editorial": {
         "location_source": "Android-каталог «Культурный гид»",
         "todo": [
-          "Год установки памятника и скульптор неизвестны — уточнить"
+          "Год открытия: по Адвокатской газете и pravo.ru — к 170-летию Плевако (2012), по komandirovka.ru — 2013. Уточнить и добавить в даты"
         ]
       }
     },
@@ -245,12 +298,19 @@
         "Площадь — удобная точка, чтобы оглядеться: отсюда в пешей доступности торговые ряды, музей и пассаж Яушевых."
       ],
       "note": "До революции здесь была Михайловская площадь — одно из главных мест города, вокруг стояли торговые ряды, лавки и купеческие дома.",
-      "sources": [],
+      "sources": [
+        {
+          "title": "Троицк — самый солнечный город Урала",
+          "url": "https://uraloved.ru/troitsk",
+          "publisher": "Ураловед"
+        }
+      ],
       "photos": [],
       "editorial": {
         "location_source": "Маленький караван: проверено на месте, сентябрь 2026",
         "todo": []
-      }
+      },
+      "people": []
     },
     {
       "id": "mechet-gataully-mully",
@@ -278,12 +338,26 @@
           "event": "Здание расширено и перестроено"
         }
       ],
-      "sources": [],
+      "sources": [
+        {
+          "title": "Статья о мечетях Троицка (журнал «Tatarica»)",
+          "url": "https://tatarica.elpub.ru/jour/article/download/53/55",
+          "publisher": "Tatarica"
+        }
+      ],
       "photos": [],
       "editorial": {
         "location_source": "Android-каталог «Культурный гид»",
-        "todo": []
-      }
+        "todo": [
+          "Адрес ул. Ленина, 117 в найденных источниках не подтверждён (в статье — Базарная улица, историческое название) — проверить"
+        ]
+      },
+      "people": [
+        {
+          "name": "Абдулвали Яушев",
+          "role": "customer"
+        }
+      ]
     },
     {
       "id": "vodonapornaya-bashnya",
@@ -314,11 +388,19 @@
           "attribution": "probable"
         }
       ],
-      "sources": [],
+      "sources": [
+        {
+          "title": "Достопримечательности Троицка",
+          "url": "https://www.komandirovka.ru/sights/troick/",
+          "publisher": "Командировка.ру"
+        }
+      ],
       "photos": [],
       "editorial": {
         "location_source": "Android-каталог «Культурный гид»",
-        "todo": []
+        "todo": [
+          "Архитектор В. Санжаревский в найденных источниках не подтверждён — проверить по реестру ОКН или в музее"
+        ]
       }
     },
     {
@@ -348,18 +430,38 @@
           "name": "Иван Иванович Неплюев",
           "role": "subject",
           "years": "1693–1773"
+        },
+        {
+          "name": "Владимир Жариков",
+          "role": "sculptor"
+        },
+        {
+          "name": "Владимир Сорокин",
+          "role": "architect"
         }
       ],
       "sources": [
         {
           "title": "Википедия: Неплюев, Иван Иванович",
           "url": "https://ru.wikipedia.org/wiki/Неплюев,_Иван_Иванович"
+        },
+        {
+          "title": "Памятник Неплюеву в Троицке",
+          "url": "http://www.карта74.рф/tourism/monument/pamyatnik_neplyuev_troizk",
+          "publisher": "КАРТА74.РФ"
+        },
+        {
+          "title": "Троицк — самый солнечный город Урала",
+          "url": "https://uraloved.ru/troitsk",
+          "publisher": "Ураловед"
         }
       ],
       "photos": [],
       "editorial": {
         "location_source": "Android-каталог «Культурный гид»",
-        "todo": []
+        "todo": [
+          "Координата (54.082, 61.562) приблизительная; по источникам памятник стоит на площади перед храмом Дмитрия Солунского — уточнить на месте"
+        ]
       }
     },
     {
@@ -390,7 +492,8 @@
         "todo": [
           "Уточнить адрес и автора скульптуры"
         ]
-      }
+      },
+      "people": []
     },
     {
       "id": "skulptura-gorodovoy",
@@ -414,7 +517,8 @@
         "todo": [
           "Уточнить год установки и автора скульптуры"
         ]
-      }
+      },
+      "people": []
     },
     {
       "id": "pamyatnik-krylovu",
@@ -448,7 +552,23 @@
           "years": "1769–1844"
         }
       ],
-      "sources": [],
+      "sources": [
+        {
+          "title": "Памятник баснописцу Ивану Крылову",
+          "url": "https://litkarta.chelreglib.ru/places/group/pamyatniki/place/pamyatnik-basnopiscu-ivanu-krylovu/",
+          "publisher": "Литературная карта Челябинской области (ЧОУНБ)"
+        },
+        {
+          "title": "Герои басен И. А. Крылова на улицах Троицка",
+          "url": "https://litkarta.chelreglib.ru/news/2019/11/07/geroi-basen-i-krylova-na-ulicah-troicka/",
+          "publisher": "Литературная карта Челябинской области (ЧОУНБ)"
+        },
+        {
+          "title": "Каслинский завод изготовил скульптуры с баснописцем Крыловым и героями его басен",
+          "url": "https://mechel.ru/sector/steel/kaslinskiy-zavod-arkhitekturno-khudozhestvennogo-litya/press/kaslinskiy-zavod-izgotovil-skulptury-s-basnopistsem-krylovym-i-geroyami-ego-basen/",
+          "publisher": "Мечел"
+        }
+      ],
       "photos": [],
       "editorial": {
         "location_source": "Маленький караван: проверено на месте, сентябрь 2026",
@@ -497,11 +617,19 @@
       "heritage": {
         "level": "federal"
       },
-      "sources": [],
+      "sources": [
+        {
+          "title": "Гостиница «Центральная», Троицк",
+          "url": "https://www.putevka.com/chelyabinskaya-oblast/troitsk/tsentralnaya",
+          "publisher": "Путёвка.ком"
+        }
+      ],
       "photos": [],
       "editorial": {
         "location_source": "Маленький караван: проверено на месте, сентябрь 2026",
-        "todo": []
+        "todo": [
+          "Статус ОКН федерального значения (1995) не подтверждён по реестру; об архитекторе пишет только туристический сайт — нужен краеведческий источник"
+        ]
       }
     }
   ]

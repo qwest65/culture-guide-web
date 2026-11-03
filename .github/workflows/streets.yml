@@ -12,6 +12,7 @@ on:
     paths:
       - "content/cities/*/walking.json"
       - "tools/build_streets.py"
+      - ".github/workflows/streets.yml"
   workflow_dispatch:
     inputs:
       city:
@@ -57,7 +58,7 @@ jobs:
           fi
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -q -m "Улицы и пешеходные пути"
-          git push
+          git pull -q --rebase && git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
   deploy:

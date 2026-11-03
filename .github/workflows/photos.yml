@@ -1,0 +1,35 @@
+name: Photos
+
+# Кандидаты в фото достопримечательностей с Викисклада (свободные лицензии, с автором):
+# tools/fetch_photos.py кладёт превью в photos-candidates/<город>/ — в сайт они не попадают.
+# Редактор выбирает снимки и переносит в public/photos/<город>/ и в поле photos объекта.
+on:
+  push:
+    branches: [main, "claude/**"]
+    paths:
+      - "tools/fetch_photos.py"
+      - ".github/workflows/photos.yml"
+  workflow_dispatch:
+    inputs:
+      city:
+        description: "Город (папка в content/cities)"
+        type: string
+        default: "troitsk"
+
+permissions:
+  contents: write
+
+jobs:
+  photos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Кандидаты
+        run: python3 tools/fetch_photos.py "${{ inputs.city || 'troitsk' }}"
+      - name: Коммит
+        run: |
+          git add -A photos-candidates
+          if git diff --cached --quiet; then echo "Нет новых кандидатов."; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Кандидаты в фото: ${{ inputs.city || 'troitsk' }}"
+          git pull -q --rebase && git push

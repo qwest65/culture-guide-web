@@ -1,0 +1,40 @@
+name: Checks
+
+# Проверка перед слиянием: данные городов, типы, юнит-тесты, сборка и smoke-тест в настоящем браузере.
+# Красный крестик у pull request — сливать нельзя, пока не исправлено.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Пакеты городов
+        run: npm run content:check
+      - name: Типы
+        run: npm run typecheck
+      - name: Юнит-тесты
+        run: npm test
+      - name: Сборка
+        run: npm run build
+      - name: Браузер для smoke-теста
+        run: npx playwright install --with-deps chromium
+      - name: Smoke-тест
+        run: npm run smoke
+      - name: Снимки экранов
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: test-results/
+          if-no-files-found: ignore

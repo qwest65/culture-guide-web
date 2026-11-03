@@ -1,0 +1,4 @@
+{
+  "note": "Порядок городов в списке выбора. Каждый город — папка content/cities/<id>/ (см. docs/city-package.md).",
+  "cities": ["troitsk"]
+}

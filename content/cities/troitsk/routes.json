@@ -1,0 +1,58 @@
+{
+  "routes": [
+    {
+      "id": "istoricheskiy-tsentr",
+      "status": "review",
+      "title": "Исторический центр",
+      "description": "От места основания крепости через собор и купеческие кварталы к пассажу Яушевых и памятнику Плевако. Около двух часов неспешной прогулки.",
+      "duration_min": 120,
+      "stops": [
+        "kamen-troitskoy-kreposti",
+        "svyato-troitskiy-sobor",
+        "tsentralnaya-ploshchad",
+        "torgovye-ryady",
+        "kraevedcheskiy-muzey",
+        "passazh-yaushevykh",
+        "pamyatnik-plevako"
+      ]
+    },
+    {
+      "id": "arhitektura-i-kupechestvo",
+      "status": "review",
+      "title": "Архитектура и купечество",
+      "description": "Неоготическая водонапорная башня, торговые ряды, пассаж Яушевых и мечеть — как богатели и строились купцы Троицка.",
+      "stops": [
+        "vodonapornaya-bashnya",
+        "kraevedcheskiy-muzey",
+        "torgovye-ryady",
+        "passazh-yaushevykh",
+        "mechet-gataully-mully"
+      ]
+    },
+    {
+      "id": "istoriya-goroda",
+      "status": "review",
+      "title": "История города",
+      "description": "Точки, связанные с основанием крепости, Пугачёвским восстанием и превращением Троицка в торговый город.",
+      "stops": [
+        "kamen-troitskoy-kreposti",
+        "tsentralnaya-ploshchad",
+        "pamyatnik-neplyuevu",
+        "torgovye-ryady",
+        "svyato-troitskiy-sobor"
+      ]
+    },
+    {
+      "id": "gorod-mnogih-ver",
+      "status": "review",
+      "title": "Город многих вер",
+      "description": "Православный собор и соборная мечеть, купеческие постройки татарской династии Яушевых — многонациональный Троицк.",
+      "stops": [
+        "svyato-troitskiy-sobor",
+        "tsentralnaya-ploshchad",
+        "passazh-yaushevykh",
+        "mechet-gataully-mully"
+      ]
+    }
+  ]
+}

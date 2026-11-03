@@ -4,7 +4,7 @@
 # Запускается таймером раз в 2 минуты; если GitHub недоступен — сайт остаётся как был.
 set -eu
 REPO="https://github.com/qwest65/culture-guide-web.git"
-DIR="/srv/sites/culture-guide"
+DIR="${1:-/srv/sites/culture-guide.mooo.com}"
 
 if [ ! -d "$DIR/.git" ]; then
 	git clone --quiet --depth 1 --branch gh-pages "$REPO" "$DIR"

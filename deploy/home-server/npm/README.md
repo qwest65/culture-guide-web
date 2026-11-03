@@ -94,6 +94,10 @@ cd /srv/npm && docker compose down
 
 ## Переезд всех доменов с Caddy на панель
 
+**Выполнен 3 ноября 2026.** Все пять доменов — в панели с сертификатами Let's Encrypt, Caddy остановлен
+(`--restart=no`, контейнер и его данные пока сохранены для отката). Сертификат 3x-ui берёт
+`/usr/local/sbin/sync-npm-xui-cert.sh` (cron каждые 6 часов), первый запуск — из `live/npm-4`.
+
 Подготовка (сделано 3 ноября 2026): в панели заведены без SSL `culture-guide.mooo.com`, `ha.io.mooo.com`
 (WebSocket), `frigate.io.mooo.com` (WebSocket), `cloud.io.mooo.com` (WebSocket; в «Своих настройках»
 `client_max_body_size 0; proxy_request_buffering off;`), `h2nexus.netcraze.pro` (https → 192.168.0.91:21000,

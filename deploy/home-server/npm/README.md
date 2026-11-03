@@ -91,3 +91,58 @@ cd /srv/npm && docker compose down
 ```
 
 и удалить 4 строки `culture-guide.mooo.com { … }` из Caddyfile, затем `docker exec caddy caddy reload --config /etc/caddy/Caddyfile`.
+
+## Переезд всех доменов с Caddy на панель
+
+Подготовка (сделано 3 ноября 2026): в панели заведены без SSL `culture-guide.mooo.com`, `ha.io.mooo.com`
+(WebSocket), `frigate.io.mooo.com` (WebSocket), `cloud.io.mooo.com` (WebSocket; в «Своих настройках»
+`client_max_body_size 0; proxy_request_buffering off;`), `h2nexus.netcraze.pro` (https → 192.168.0.91:21000,
+WebSocket; в «Своих настройках» `location = / { return 302 /hysteria/; }`, `proxy_ssl_server_name on;`,
+`proxy_ssl_name h2nexus.netcraze.pro;`). Каждый проверен через порт 8080.
+
+Сертификат для 3x-ui после переезда берёт `sync-npm-xui-cert.sh` (вместо `sync-caddy-xui-cert.sh`):
+ищет в `/srv/npm/letsencrypt/live/npm-*/` сертификат `h2nexus.netcraze.pro`, проверяет и кладёт
+в `/root/cert/h2nexus.netcraze.pro/`, перезапуская 3x-ui только при изменении.
+
+### Смена «входной двери» (1–2 минуты простоя всех сайтов)
+
+1. Caddy останавливается и не запускается сам после перезагрузки (его настройки и сертификаты остаются):
+
+   ```bash
+   docker update --restart=no caddy && docker stop caddy
+   ```
+
+2. Панель занимает 80 и 443:
+
+   ```bash
+   cd /srv/npm && sed -i 's/"8080:80"/"80:80"/; s/"8443:443"/"443:443"/' docker-compose.yml && docker compose up -d
+   ```
+
+3. В панели по одному хосту: «SSL» → «Запросить новый сертификат», включить «Принудительный SSL» и HTTP/2
+   (для `cloud` — ещё HSTS) → «Сохранить». Порядок: culture-guide → ha → frigate → cloud → h2nexus.
+
+4. Сертификат для 3x-ui — новый скрипт вместо старого:
+
+   ```bash
+   curl -fsSL -o /usr/local/sbin/sync-npm-xui-cert.sh https://raw.githubusercontent.com/qwest65/culture-guide-web/claude/culture-guide-city-schema-4v0qq3/deploy/home-server/sync-npm-xui-cert.sh && chmod +x /usr/local/sbin/sync-npm-xui-cert.sh
+   ```
+
+   ```bash
+   /usr/local/sbin/sync-npm-xui-cert.sh && journalctl -t sync-npm-xui-cert -n 5 --no-pager
+   ```
+
+   ```bash
+   crontab -l | sed 's#/usr/local/sbin/sync-caddy-xui-cert.sh#/usr/local/sbin/sync-npm-xui-cert.sh#' | crontab -
+   ```
+
+### Откат
+
+```bash
+cd /srv/npm && sed -i 's/"80:80"/"8080:80"/; s/"443:443"/"8443:443"/' docker-compose.yml && docker compose up -d
+```
+
+```bash
+docker update --restart=unless-stopped caddy && docker start caddy
+```
+
+и вернуть в crontab `sync-caddy-xui-cert.sh`.

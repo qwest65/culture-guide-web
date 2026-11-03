@@ -85,14 +85,39 @@ def speakable(text, lexicon, voice):
 
 
 def chunks(text, limit=240):
-    """Длинный текст режем по предложениям: так надёжнее для API v3."""
+    """Режем текст на куски до limit знаков (API v3 больше ~250 не принимает):
+    по предложениям, слишком длинное предложение — по запятым и тире, в крайнем случае по словам."""
+    def pieces(sentence):
+        if len(sentence) <= limit:
+            return [sentence]
+        out, cur = [], ""
+        for part in re.split(r"(?<=[,;:—])\s+", sentence):
+            if len(part) > limit:  # совсем без знаков препинания — по словам
+                words = part.split()
+                part = ""
+                for w in words:
+                    if part and len(part) + 1 + len(w) > limit:
+                        out.append(f"{cur} {part}".strip() if cur else part)
+                        cur, part = "", w
+                    else:
+                        part = f"{part} {w}".strip()
+            if cur and len(cur) + 1 + len(part) > limit:
+                out.append(cur)
+                cur = part
+            else:
+                cur = f"{cur} {part}".strip()
+        if cur:
+            out.append(cur)
+        return out
+
     parts, cur = [], ""
     for sentence in re.split(r"(?<=[.!?…])\s+", text):
-        if cur and len(cur) + 1 + len(sentence) > limit:
-            parts.append(cur)
-            cur = sentence
-        else:
-            cur = f"{cur} {sentence}".strip()
+        for piece in pieces(sentence):
+            if cur and len(cur) + 1 + len(piece) > limit:
+                parts.append(cur)
+                cur = piece
+            else:
+                cur = f"{cur} {piece}".strip()
     if cur:
         parts.append(cur)
     return parts

@@ -81,12 +81,15 @@ jobs:
           name: voice-samples
           path: samples/
       - name: Озвучка
+        id: gen
+        continue-on-error: true
         if: inputs.mode != 'samples' && steps.key.outputs.skip != 'true'
         env:
           YANDEX_SPEECHKIT_KEY: ${{ secrets.YANDEX_SPEECHKIT_KEY }}
         run: python3 tools/generate_audio.py ${{ inputs.city }} --voice ${{ inputs.voice || 'ermil' }} ${{ inputs.mode == 'all' && '--all' || '' }}
       - name: Коммит
         id: commit
+        # Коммитим и то, что успело озвучиться до сбоя: manifest.json пишется после каждого файла.
         if: inputs.mode != 'samples' && steps.key.outputs.skip != 'true'
         run: |
           git add -A public/audio
@@ -99,8 +102,13 @@ jobs:
             commit -q -m "Озвучка: ${{ inputs.mode || 'missing' }}, голос ${{ inputs.voice || 'ermil' }}"
           git pull -q --rebase && git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Сбой озвучки
+        if: steps.gen.outcome == 'failure'
+        run: |
+          echo "::error::Озвучка прервалась — сделанное закоммичено, остальное см. в шаге «Озвучка»."
+          exit 1
 
   deploy:
     needs: voice
-    if: needs.voice.outputs.changed == 'true'
+    if: always() && needs.voice.outputs.changed == 'true'
     uses: ./.github/workflows/deploy.yml

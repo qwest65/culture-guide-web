@@ -15,6 +15,9 @@ services:
     volumes:
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
+    networks:
+      - default
+      - nextcloud   # чтобы достучаться до Nextcloud по имени контейнера (nextcloud:80)
 
   static:
     image: nginx:stable-alpine
@@ -23,3 +26,8 @@ services:
     volumes:
       - /srv/sites:/srv/sites:ro
       - ./static.conf:/etc/nginx/conf.d/default.conf:ro
+
+networks:
+  nextcloud:
+    name: nextcloud_default
+    external: true

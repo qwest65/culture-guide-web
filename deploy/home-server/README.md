@@ -12,15 +12,14 @@
 
 ## 1. Поддомен
 
-На [duckdns.org](https://www.duckdns.org) войдите через GitHub или Google, создайте поддомен
-(например, `kulturgid`) и в поле **current ip** впишите статический IP сервера → **update ip**.
-Проверка с любого компьютера:
+`culture-guide.mooo.com` — поддомен FreeDNS (afraid.org), CNAME на `h2nexus.netcraze.pro`
+(адрес роутера, как у остальных сервисов). Проверка:
 
 ```bash
-nslookup kulturgid.duckdns.org
+nslookup culture-guide.mooo.com
 ```
 
-Должен вернуться ваш IP.
+Должен вернуться внешний IP дома.
 
 ## 2. Файлы сайта
 
@@ -38,8 +37,7 @@ ls /srv/sites/culture-guide
 
 ## 3. Caddy
 
-Добавьте блок из `Caddyfile.snippet` в ваш Caddyfile (обычно `/etc/caddy/Caddyfile`),
-заменив `kulturgid.duckdns.org` на свой поддомен. Затем:
+Добавьте блок из `Caddyfile.snippet` в ваш Caddyfile (обычно `/etc/caddy/Caddyfile`). Затем:
 
 ```bash
 sudo caddy validate --config /etc/caddy/Caddyfile
@@ -85,11 +83,11 @@ Caddy получает сертификат Let's Encrypt.
 С компьютера:
 
 ```bash
-curl -sI https://kulturgid.duckdns.org/ | head -5
+curl -sI https://culture-guide.mooo.com/ | head -5
 ```
 
 ```bash
-curl -sI https://kulturgid.duckdns.org/map/troitsk/style.json | grep -i cache-control
+curl -sI https://culture-guide.mooo.com/map/troitsk/style.json | grep -i cache-control
 ```
 
 Первая команда — `HTTP/2 200`, вторая — `max-age=86400`.

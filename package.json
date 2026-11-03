@@ -21,6 +21,7 @@
     "check": "npm run content:check && npm run typecheck && npm test && npm run build && npm run smoke"
   },
   "dependencies": {
+    "maplibre-gl": "6.15.0",
     "preact": "10.29.8"
   },
   "devDependencies": {

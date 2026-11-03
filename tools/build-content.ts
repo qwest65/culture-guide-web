@@ -10,14 +10,16 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { CitiesIndex } from '../src/content/schema';
+import { AudioManifest, CitiesIndex, Voice } from '../src/content/schema';
 import { BUNDLE_FORMAT, type CitiesIndexData, type CityIndexEntry } from '../src/content/bundle';
-import { buildCity } from './content';
+import { buildCity, textHash } from './content';
 import { countOf } from '../src/lib/format';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const CONTENT = join(ROOT, 'content');
-const OUT = join(ROOT, 'public', 'data');
+const PUBLIC = join(ROOT, 'public');
+const OUT = join(PUBLIC, 'data');
+const hashOf = (body: string) => createHash('sha256').update(body).digest('hex').slice(0, 10);
 const checkOnly = process.argv.includes('--check');
 
 const readJson = (path: string): unknown => JSON.parse(readFileSync(path, 'utf8'));
@@ -27,6 +29,27 @@ const warnings: string[] = [];
 const todo: string[] = [];
 const entries: CityIndexEntry[] = [];
 const outputs: { name: string; body: string }[] = [];
+
+// Общие фразы навигатора: в приложение попадают только озвученные.
+const voice = Voice.safeParse(readJson(join(CONTENT, 'voice.json')));
+if (!voice.success) {
+  console.error('content/voice.json:', voice.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; '));
+  process.exit(1);
+}
+const commonAudio = existsSync(join(PUBLIC, 'audio/common/manifest.json'))
+  ? AudioManifest.parse(readJson(join(PUBLIC, 'audio/common/manifest.json'))).files
+  : {};
+const phrases: Record<string, string> = {};
+for (const [key, text] of Object.entries(voice.data.phrases)) {
+  const rec = commonAudio[key];
+  const file = `audio/common/${key}.mp3`;
+  if (!rec || !existsSync(join(PUBLIC, file))) {
+    warnings.push(`content/voice.json: фраза «${key}» не озвучена (workflow «Voice»)`);
+    continue;
+  }
+  if (rec.text_hash !== textHash(text)) warnings.push(`content/voice.json: фраза «${key}» изменилась после озвучки`);
+  phrases[key] = `${file}?v=${rec.text_hash}`;
+}
 
 const index = CitiesIndex.safeParse(readJson(join(CONTENT, 'cities.json')));
 if (!index.success) {
@@ -47,14 +70,28 @@ for (const id of index.data.cities) {
     errors.push(`content/cities.json: город «${id}» указан, но папки content/cities/${id} нет`);
     continue;
   }
-  const lexiconPath = join(dir, 'lexicon.json');
+  const optional = (path: string) => (existsSync(path) ? readJson(path) : undefined);
+  const streetsPath = join(dir, 'streets.json');
+  let streetsFile: string | undefined;
+  if (existsSync(streetsPath)) {
+    const body = JSON.stringify(readJson(streetsPath));
+    streetsFile = `${id}.streets.${hashOf(body)}.json`;
+    outputs.push({ name: streetsFile, body });
+  }
   const { bundle, report } = buildCity({
     folder: id,
     city: readJson(join(dir, 'city.json')),
     places: readJson(join(dir, 'places.json')),
     routes: readJson(join(dir, 'routes.json')),
-    lexicon: existsSync(lexiconPath) ? readJson(lexiconPath) : undefined,
+    lexicon: optional(join(dir, 'lexicon.json')),
+    walking: optional(join(dir, 'walking.json')),
+    streets: optional(streetsPath),
+    audio: optional(join(PUBLIC, 'audio', id, 'manifest.json')),
+    streetsFile: streetsFile && `data/${streetsFile}`,
+    hasMap: existsSync(join(PUBLIC, 'map', id, 'style.json')),
+    phrases,
     fileExists: (rel) => existsSync(join(dir, rel)),
+    publicExists: (rel) => existsSync(join(PUBLIC, rel)),
   });
   errors.push(...report.errors);
   warnings.push(...report.warnings);
@@ -62,8 +99,7 @@ for (const id of index.data.cities) {
   if (!bundle || bundle.city.status === 'draft') continue;
 
   const body = JSON.stringify(bundle);
-  const hash = createHash('sha256').update(body).digest('hex').slice(0, 10);
-  const name = `${id}.${hash}.json`;
+  const name = `${id}.${hashOf(body)}.json`;
   outputs.push({ name, body });
   entries.push({
     id,

@@ -1,0 +1,91 @@
+name: Voice
+
+# Озвучка голосом Яндекс SpeechKit (API v3), как в «Маленьком караване».
+# Запуск вручную: Actions → Voice → Run workflow.
+#
+# missing — озвучить новое и изменённое: рассказы у объектов и фразы навигатора
+#           (что изменилось, видно по хэшу текста в public/audio/*/manifest.json);
+# all     — переозвучить всё заново (например, другим голосом);
+# samples — образцы голосов (артефакт запуска внизу страницы), заодно проверка ключа.
+#
+# Нужен секрет YANDEX_SPEECHKIT_KEY — API-ключ сервисного аккаунта Яндекс Облака с ролью
+# ai.speechkit-tts.user (можно тот же, что в «Маленьком караване»):
+# Settings → Secrets and variables → Actions → New repository secret.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Что сделать"
+        type: choice
+        options: ["missing", "all", "samples"]
+        default: "missing"
+      voice:
+        description: "Голос"
+        type: choice
+        options: ["ermil", "alexander", "kirill", "anton", "filipp", "zahar"]
+        default: "ermil"
+      city:
+        description: "Город (пусто — все)"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: voice-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  voice:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy requests lameenc
+      - name: Ключ
+        env:
+          YANDEX_SPEECHKIT_KEY: ${{ secrets.YANDEX_SPEECHKIT_KEY }}
+        run: |
+          if [ -z "$YANDEX_SPEECHKIT_KEY" ]; then
+            echo "::error::Секрет YANDEX_SPEECHKIT_KEY не задан: Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+      - name: Образцы голосов
+        if: inputs.mode == 'samples'
+        env:
+          YANDEX_SPEECHKIT_KEY: ${{ secrets.YANDEX_SPEECHKIT_KEY }}
+        run: python3 tools/generate_audio.py --samples samples
+      - uses: actions/upload-artifact@v4
+        if: inputs.mode == 'samples'
+        with:
+          name: voice-samples
+          path: samples/
+      - name: Озвучка
+        if: inputs.mode != 'samples'
+        env:
+          YANDEX_SPEECHKIT_KEY: ${{ secrets.YANDEX_SPEECHKIT_KEY }}
+        run: python3 tools/generate_audio.py ${{ inputs.city }} --voice ${{ inputs.voice }} ${{ inputs.mode == 'all' && '--all' || '' }}
+      - name: Коммит
+        id: commit
+        if: inputs.mode != 'samples'
+        run: |
+          git add -A public/audio
+          if git diff --cached --quiet; then
+            echo "Озвучка не изменилась."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Озвучка: ${{ inputs.mode }}, голос ${{ inputs.voice }}"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: voice
+    if: needs.voice.outputs.changed == 'true'
+    uses: ./.github/workflows/deploy.yml

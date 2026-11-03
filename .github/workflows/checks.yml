@@ -1,19 +1,22 @@
 name: Checks
 
-# Проверка перед слиянием: данные городов, типы, юнит-тесты, сборка и smoke-тест в настоящем браузере.
-# Красный крестик у pull request — сливать нельзя, пока не исправлено.
+# Проверка: данные городов, типы, юнит-тесты, сборка и smoke-тест в настоящем браузере
+# (Chromium с экраном iPhone: главная, город, маршрут, объект, прогулка с картой и прибытием).
+# Запускается на каждый pull request и перед каждой выкладкой (deploy.yml).
+# Красный крестик — сливать и выкладывать нельзя, пока не исправлено.
 on:
   pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22

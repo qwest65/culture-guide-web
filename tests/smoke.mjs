@@ -38,7 +38,11 @@ let browser;
 try {
   await waitForServer();
   mkdirSync('test-results', { recursive: true });
-  browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  browser = await chromium.launch({
+    // WebGL для карты в headless-браузере — программный (SwiftShader).
+    args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader'],
+    ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}),
+  });
   const context = await browser.newContext({
     ...devices['iPhone 13'],
     locale: 'ru-RU',
@@ -77,10 +81,58 @@ try {
   await step('карточка объекта: рассказ, даты, люди, источники', async () => {
     await page.locator('a.stop', { hasText: 'Пассаж братьев Яушевых' }).click();
     await page.getByRole('heading', { level: 1, name: 'Пассаж братьев Яушевых' }).waitFor();
-    for (const text of ['1908–1910', 'федерального значения', 'Источники', 'Исторический центр']) {
+    for (const text of ['1908–1910', 'федерального значения', 'Источники', 'Исторический центр', 'Слушать рассказ']) {
       if (!(await page.getByText(text).first().isVisible())) throw new Error(`нет «${text}»`);
     }
     await page.screenshot({ path: 'test-results/04-place.png', fullPage: true });
+  });
+
+  await step('рассказ объекта играет по кнопке', async () => {
+    await page.getByRole('button', { name: /Слушать рассказ/ }).click();
+    await page.getByRole('button', { name: /Остановить/ }).waitFor();
+    await page.getByRole('button', { name: /Остановить/ }).click();
+  });
+
+  await step('прогулка: карта, путь по улицам, прибытие через 5 секунд у точки', async () => {
+    const stone = { latitude: 54.077456, longitude: 61.556294 };
+    const away = { latitude: 54.0782, longitude: 61.5552 }; // ~110 м от камня
+    await context.setGeolocation(away);
+    let tiles = 0;
+    let sprite = 0;
+    page.on('response', (r) => {
+      if (r.url().includes('/map/troitsk/tiles/') && r.ok()) tiles++;
+      if (r.url().includes('/map/troitsk/sprites/') && r.ok()) sprite++;
+    });
+    await page.goto(`${BASE}#/troitsk/route/istoricheskiy-tsentr`);
+    await page.getByRole('link', { name: /Начать прогулку/ }).click();
+    await page.locator('.maplibregl-canvas').waitFor({ timeout: 15000 });
+    await page.getByRole('button', { name: 'Начать прогулку' }).click();
+    await page.getByText('Точка 1 из 7').waitFor();
+    // Путь «от меня» по улицам строится, на плашке — расстояние.
+    await page.locator('.walk-banner', { hasText: /м/ }).waitFor({ timeout: 10000 });
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: 'test-results/06-walk.png' });
+    if (tiles < 4) throw new Error(`кусочки своей карты не загрузились (${tiles})`);
+    if (sprite === 0) throw new Error('значки карты не загрузились');
+    // Подошли к точке: прибытие — только после 5 секунд в радиусе.
+    await context.setGeolocation(stone);
+    await page.waitForTimeout(2000);
+    if (await page.getByText('Вы на месте').isVisible()) throw new Error('прибытие раньше 5 секунд');
+    await page.getByText('Вы на месте').waitFor({ timeout: 10000 });
+    await page.getByRole('heading', { name: 'Памятный камень Троицкой крепости' }).waitFor();
+    const src = await page.evaluate(() => [...document.querySelectorAll('audio')].length);
+    await page.screenshot({ path: 'test-results/07-arrived.png' });
+    await page.getByRole('button', { name: 'Идём дальше' }).click();
+    await page.getByText('Точка 2 из 7').waitFor();
+    void src;
+  });
+
+  await step('«Я на месте» без геопозиции и сохранение прогресса', async () => {
+    await page.getByRole('button', { name: 'Я на месте' }).click();
+    await page.getByRole('heading', { name: 'Свято-Троицкий собор' }).waitFor();
+    await page.getByRole('button', { name: 'Идём дальше' }).click();
+    await page.goto(`${BASE}#/troitsk/route/istoricheskiy-tsentr`);
+    await page.getByRole('link', { name: /Продолжить прогулку · точка 3/ }).waitFor();
   });
 
   await step('крупный шрифт включается и запоминается', async () => {

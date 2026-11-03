@@ -1,0 +1,53 @@
+name: Deploy
+
+# Выкладка на GitHub Pages (временно, пока не выбран российский хостинг и домен):
+# https://qwest65.github.io/culture-guide-web/
+#
+# После проверок (checks.yml) собранный сайт кладётся в ветку gh-pages.
+# Один раз в настройках репозитория: Settings → Pages → Source: «Deploy from a branch»,
+# ветка gh-pages, папка / (root).
+#
+# Запускается сам после каждого изменения в main и в рабочей ветке, а также после
+# озвучки, пересборки карты и улиц (voice.yml, map.yml, streets.yml).
+on:
+  push:
+    branches: [main, claude/culture-guide-city-schema-4v0qq3]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+
+  deploy:
+    needs: checks
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-pages
+      cancel-in-progress: false
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: В ветку gh-pages
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          cd dist
+          touch .nojekyll
+          git init -q -b gh-pages
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Сайт из ${GITHUB_REF_NAME} @ ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+          echo "Выложено: https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/" >> "$GITHUB_STEP_SUMMARY"

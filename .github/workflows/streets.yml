@@ -1,0 +1,66 @@
+name: Streets
+
+# Граф улиц для пешеходных путей: tools/build_streets.py берёт из OpenStreetMap улицы,
+# тротуары и дорожки скверов района города (без дворов), добавляет поправки после прохода
+# на месте (content/cities/<город>/walking.json) и пишет content/cities/<город>/streets.json.
+# Картинка-проверка — tools/preview/<город>-streets.png.
+#
+# Запускается сам при правке walking.json, вручную — Actions → Streets → Run workflow.
+on:
+  push:
+    branches: [main, "claude/**"]
+    paths:
+      - "content/cities/*/walking.json"
+      - "tools/build_streets.py"
+  workflow_dispatch:
+    inputs:
+      city:
+        description: "Город (папка в content/cities)"
+        type: string
+        default: "troitsk"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: streets-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  streets:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install matplotlib
+      - name: Улицы
+        run: |
+          if [ -n "${{ inputs.city }}" ]; then
+            python3 tools/build_streets.py "${{ inputs.city }}"
+          else
+            for city in $(python3 -c "import json;print(' '.join(json.load(open('content/cities.json'))['cities']))"); do
+              python3 tools/build_streets.py "$city"
+            done
+          fi
+      - name: Коммит
+        id: commit
+        run: |
+          git add -A content/cities/*/streets.json tools/preview
+          if git diff --cached --quiet; then
+            echo "Улицы не изменились."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Улицы и пешеходные пути"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: streets
+    if: needs.streets.outputs.changed == 'true'
+    uses: ./.github/workflows/deploy.yml

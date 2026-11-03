@@ -3,6 +3,7 @@ import { CATEGORY } from '../labels';
 import { href } from '../router';
 import { LoadError, Loading, NotFound, PageTitle, TopBar } from '../ui';
 import { routeMeta } from './City';
+import { savedProgress } from '../walk/session';
 
 export function RouteScreen({ city: cityId, id }: { city: string; id: string }) {
   const [data, retry] = useAsync(() => loadCity(cityId), [cityId]);
@@ -18,6 +19,8 @@ export function RouteScreen({ city: cityId, id }: { city: string; id: string }) 
   const route = data.value?.routes.find((r) => r.id === id);
   if (!data.value || !route) return <NotFound />;
   const places = new Map(data.value.places.map((p) => [p.id, p]));
+  const progress = savedProgress(cityId, route.id);
+  const resume = progress && progress.active > 0 && progress.active < route.stops.length;
 
   return (
     <>
@@ -26,6 +29,9 @@ export function RouteScreen({ city: cityId, id }: { city: string; id: string }) 
         <PageTitle eyebrow="Маршрут">{route.title}</PageTitle>
         <p class="meta">{routeMeta(route)}</p>
         <p class="lead">{route.description}</p>
+        <a class="button button-primary" href={href.walk(cityId, route.id)}>
+          {resume ? `Продолжить прогулку · точка ${progress!.active + 1}` : 'Начать прогулку'}
+        </a>
         {route.duration_estimated && (
           <p class="note">Время — оценка с учётом рассказов на остановках; уточним после прохода маршрута.</p>
         )}

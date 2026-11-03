@@ -3,6 +3,7 @@ import { formatHistDate } from '../lib/format';
 import { CATEGORY, HERITAGE, ROLE } from '../labels';
 import { href } from '../router';
 import { LoadError, Loading, NotFound, PageTitle, TopBar } from '../ui';
+import { ListenButton } from '../walk/ListenButton';
 
 export function PlaceScreen({ city: cityId, id }: { city: string; id: string }) {
   const [data, retry] = useAsync(() => loadCity(cityId), [cityId]);
@@ -26,6 +27,8 @@ export function PlaceScreen({ city: cityId, id }: { city: string; id: string }) 
         <PageTitle eyebrow={CATEGORY[place.category]}>{place.name}</PageTitle>
         <p class="meta">{place.address}</p>
         {place.heritage && <p class="badge">{HERITAGE[place.heritage.level]}</p>}
+
+        {place.audio && <ListenButton url={place.audio} />}
 
         <article class="story">
           {place.story.map((para, i) => (

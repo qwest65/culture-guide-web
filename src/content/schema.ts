@@ -163,9 +163,43 @@ export const City = z.object({
   editorial: Editorial,
 });
 
+const Replacement = z.object({ text: z.string().min(1), say: z.string().min(1) });
+
 export const Lexicon = z.object({
   note: z.string().optional(),
-  entries: z.array(z.object({ text: z.string().min(1), say: z.string().min(1) })),
+  entries: z.array(Replacement),
+  /** Ударения: слово целиком (регулярное выражение), без учёта регистра → «+» перед ударной гласной. */
+  stress: z.array(z.object({ word: z.string().min(1), say: z.string().min(1) })).default([]),
+});
+
+/** Общие фразы навигатора и правила чтения (content/voice.json). */
+export const Voice = z.object({
+  note: z.string().optional(),
+  phrases: z.record(z.string().regex(/^[a-z_]+$/), z.string().min(2)),
+  spoken: z.array(Replacement).default([]),
+});
+
+const PtJson = z.tuple([z.number(), z.number()]);
+
+/** Поправки к пешеходному графу после прохода на месте (walking.json). */
+export const Walking = z.object({
+  note: z.string().optional(),
+  walk_areas: z.record(z.string(), z.array(PtJson).min(3)).default({}),
+  manual_paths: z.record(z.string(), z.array(PtJson).min(2)).default({}),
+  leg_via: z.array(z.object({ from: Slug, to: Slug, via: z.array(PtJson).min(1) })).default([]),
+});
+
+/** Граф улиц (streets.json), строит tools/build_streets.py. */
+export const Streets = z.object({
+  source: z.string().optional(),
+  nodes: z.array(z.number()),
+  edges: z.array(z.number().int()),
+});
+
+/** Что уже озвучено: public/audio/<город>/manifest.json, пишет tools/generate_audio.py. */
+export const AudioManifest = z.object({
+  voice: z.string().optional(),
+  files: z.record(z.string(), z.object({ text_hash: z.string(), voice: z.string().optional(), source: z.string().optional() })),
 });
 
 export const CitiesIndex = z.object({
@@ -181,5 +215,7 @@ export type PlaceT = z.infer<typeof Place>;
 export type RouteT = z.infer<typeof Route>;
 export type CityT = z.infer<typeof City>;
 export type LexiconT = z.infer<typeof Lexicon>;
+export type WalkingT = z.infer<typeof Walking>;
+export type VoiceT = z.infer<typeof Voice>;
 export type PlaceCategoryT = z.infer<typeof PlaceCategory>;
 export type PersonRoleT = z.infer<typeof PersonRole>;

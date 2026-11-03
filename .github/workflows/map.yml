@@ -1,0 +1,48 @@
+name: Map
+
+# Своя подложка карты: tools/build_map.py скачивает с OpenFreeMap (данные OpenStreetMap)
+# оформление, кусочки карты района города, значки и шрифты в public/map/<город>/ и коммитит.
+# Карта сама не обновляется — когда в городе что-то поменялось или добавили город,
+# запустите вручную: Actions → Map → Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      city:
+        description: "Город (папка в content/cities)"
+        type: string
+        default: "troitsk"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: map-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  map:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Карта
+        run: python3 tools/build_map.py "${{ inputs.city }}"
+      - name: Коммит
+        id: commit
+        run: |
+          git add -A "public/map/${{ inputs.city }}"
+          if git diff --cached --quiet; then
+            echo "Карта не изменилась."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Карта: ${{ inputs.city }}"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: map
+    if: needs.map.outputs.changed == 'true'
+    uses: ./.github/workflows/deploy.yml

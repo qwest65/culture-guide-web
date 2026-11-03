@@ -2,11 +2,29 @@
  * Проверка и сборка пакета города — без чтения файлов, чтобы её можно было тестировать.
  * Файлы читает tools/build-content.ts.
  */
+import { createHash } from 'node:crypto';
 import { z } from 'zod';
-import { City, Lexicon, PlacesFile, RoutesFile, type CityT, type PlaceT } from '../src/content/schema';
-import { BUNDLE_FORMAT, type CityBundle, type PlaceData, type RouteData } from '../src/content/bundle';
+import {
+  AudioManifest,
+  City,
+  Lexicon,
+  PlacesFile,
+  RoutesFile,
+  Streets,
+  Walking,
+  type CityT,
+  type PlaceT,
+} from '../src/content/schema';
+import { BUNDLE_FORMAT, type CityBundle, type LegData, type PlaceData, type RouteData } from '../src/content/bundle';
 import { inBBox } from '../src/lib/geo';
 import { routeDistanceMeters, routeDurationMinutes } from '../src/lib/estimate';
+import { StreetGraph, lineLength, type Pt } from '../src/lib/streets';
+
+/** Текст, который озвучивается у объекта: название и рассказ. Так же считает tools/generate_audio.py. */
+export const placeSpeech = (p: { name: string; story: string[] }) => `${p.name}. ${p.story.join(' ')}`;
+
+/** Короткий хэш текста — по нему видно, что озвучка устарела. */
+export const textHash = (s: string) => createHash('sha256').update(s, 'utf8').digest('hex').slice(0, 12);
 
 export type RawCity = {
   folder: string;
@@ -14,8 +32,21 @@ export type RawCity = {
   places: unknown;
   routes: unknown;
   lexicon?: unknown;
+  walking?: unknown;
+  /** Граф улиц (streets.json), если построен. */
+  streets?: unknown;
+  /** Что озвучено (public/audio/<город>/manifest.json). */
+  audio?: unknown;
+  /** Имя файла графа улиц в public/data, если граф есть. */
+  streetsFile?: string;
+  /** Есть ли своя подложка карты public/map/<город>/style.json. */
+  hasMap?: boolean;
+  /** Озвученные общие фразы: ключ → адрес. */
+  phrases?: Record<string, string>;
   /** Существует ли файл в папке города (для фото). */
   fileExists: (relPath: string) => boolean;
+  /** Существует ли файл в public/ (для озвучки). */
+  publicExists?: (relPath: string) => boolean;
 };
 
 export type Report = { errors: string[]; warnings: string[]; todo: string[] };
@@ -45,11 +76,25 @@ export function buildCity(raw: RawCity): CityResult {
   const places = PlacesFile.safeParse(raw.places);
   const routes = RoutesFile.safeParse(raw.routes);
   const lexicon = raw.lexicon === undefined ? null : Lexicon.safeParse(raw.lexicon);
+  const walking = Walking.safeParse(raw.walking ?? {});
+  const streets = raw.streets === undefined ? null : Streets.safeParse(raw.streets);
+  const audio = AudioManifest.safeParse(raw.audio ?? { files: {} });
+  if (!walking.success) report.errors.push(...zodIssues(`${dir}/walking.json`, walking.error));
+  if (streets && !streets.success) report.errors.push(...zodIssues(`${dir}/streets.json`, streets.error));
+  if (!audio.success) report.errors.push(...zodIssues(`public/audio/${raw.folder}/manifest.json`, audio.error));
   if (!city.success) report.errors.push(...zodIssues(`${dir}/city.json`, city.error));
   if (!places.success) report.errors.push(...zodIssues(`${dir}/places.json`, places.error));
   if (!routes.success) report.errors.push(...zodIssues(`${dir}/routes.json`, routes.error));
   if (lexicon && !lexicon.success) report.errors.push(...zodIssues(`${dir}/lexicon.json`, lexicon.error));
-  if (!city.success || !places.success || !routes.success || (lexicon && !lexicon.success)) {
+  if (
+    !city.success ||
+    !places.success ||
+    !routes.success ||
+    (lexicon && !lexicon.success) ||
+    !walking.success ||
+    (streets && !streets.success) ||
+    !audio.success
+  ) {
     return { bundle: null, lexicon: null, report };
   }
 
@@ -76,6 +121,22 @@ export function buildCity(raw: RawCity): CityResult {
     for (const t of p.editorial.todo) report.todo.push(`${c.name} · ${p.name}: ${t}`);
   }
 
+  // Граф улиц: пути между остановками строятся по нему, как в «Маленьком караване».
+  const graph = streets?.success ? new StreetGraph(streets.data) : null;
+  if (!graph) report.todo.push(`${c.name}: нет графа улиц — запустите workflow «Streets»; длина маршрутов пока по прямой`);
+  const via = new Map(walking.data.leg_via.map((v) => [`${v.from}>${v.to}`, v.via as Pt[]]));
+  const legBetween = (a: PlaceT, b: PlaceT): LegData | null => {
+    if (!graph) return null;
+    const pa = a.listen_at ?? a.location;
+    const pb = b.listen_at ?? b.location;
+    const forward = via.get(`${a.id}>${b.id}`);
+    const backward = via.get(`${b.id}>${a.id}`);
+    const middle = forward ?? (backward ? [...backward].reverse() : []);
+    const line = graph.routeVia([[pa.lat, pa.lon], ...middle, [pb.lat, pb.lon]]);
+    if (!line) return null;
+    return { meters: Math.round(lineLength(line)), points: line.map(([la, lo]) => [round6(la), round6(lo)]) };
+  };
+
   // Маршруты
   const routeIds = new Set<string>();
   const routeData: RouteData[] = [];
@@ -92,10 +153,29 @@ export function buildCity(raw: RawCity): CityResult {
       else stops.push(p);
     }
     if (!visible(r) || stops.length !== r.stops.length) continue;
-    const distance = routeDistanceMeters(stops.map((p) => p.listen_at ?? p.location));
+    const legs: LegData[] = [];
+    for (let i = 1; i < stops.length && graph; i++) {
+      const leg = legBetween(stops[i - 1], stops[i]);
+      if (!leg) {
+        report.errors.push(`${where} — нет пути по улицам от «${stops[i - 1].id}» до «${stops[i].id}» (точка дальше 150 м от улиц)`);
+        continue;
+      }
+      const straight = lineLength([
+        [stops[i - 1].location.lat, stops[i - 1].location.lon],
+        [stops[i].location.lat, stops[i].location.lon],
+      ]);
+      if (leg.meters > straight * 4 + 200) {
+        report.warnings.push(`${where} — путь «${stops[i - 1].id}» → «${stops[i].id}» подозрительно длинный: ${leg.meters} м при ${Math.round(straight)} м по прямой`);
+      }
+      legs.push(leg);
+    }
+    const distance = graph
+      ? legs.reduce((s, l) => s + l.meters, 0)
+      : routeDistanceMeters(stops.map((p) => p.listen_at ?? p.location));
     routeData.push({
       ...r,
       distance_m: distance,
+      legs,
       duration_min:
         r.duration_min ?? routeDurationMinutes(distance, stops.map((p) => p.story.join(' ').length)),
       duration_estimated: r.duration_min === undefined,
@@ -112,14 +192,37 @@ export function buildCity(raw: RawCity): CityResult {
 
   if (report.errors.length > 0) return { bundle: null, lexicon: null, report };
 
-  const publicPlaces: PlaceData[] = places.data.places.filter(visible).map(({ editorial: _e, ...rest }) => rest);
+  // Озвучка: файл есть и записан с того же текста — иначе предупреждение.
+  const audioFiles = audio.data.files;
+  const publicPlaces: PlaceData[] = places.data.places.filter(visible).map(({ editorial: _e, ...rest }) => {
+    const rec = audioFiles[rest.id];
+    const file = `audio/${c.id}/${rest.id}.mp3`;
+    if (!rec || !raw.publicExists?.(file)) {
+      report.warnings.push(`${dir}: ${rest.id} — нет озвучки (workflow «Voice»)`);
+      return rest;
+    }
+    if (rec.text_hash !== textHash(placeSpeech(rest))) {
+      report.warnings.push(`${dir}: ${rest.id} — текст изменился после озвучки, нужно переозвучить (workflow «Voice»)`);
+    }
+    return { ...rest, audio: `${file}?v=${rec.text_hash}` };
+  });
   const { editorial: _ce, ...publicCity } = c;
   return {
-    bundle: { format: BUNDLE_FORMAT, city: publicCity, places: publicPlaces, routes: routeData },
+    bundle: {
+      format: BUNDLE_FORMAT,
+      city: publicCity,
+      places: publicPlaces,
+      routes: routeData,
+      streets: graph && raw.streetsFile ? raw.streetsFile : null,
+      map_style: raw.hasMap ? `map/${c.id}/style.json` : null,
+      phrases: raw.phrases ?? {},
+    },
     lexicon: lexicon?.success ? lexicon.data : null,
     report,
   };
 }
+
+const round6 = (v: number) => Math.round(v * 1e6) / 1e6;
 
 /** Текст для синтеза речи: подставляет словарь (сначала длинные записи). */
 export function applyLexicon(text: string, entries: { text: string; say: string }[]): string {

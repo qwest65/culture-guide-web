@@ -5,6 +5,7 @@ export default defineConfig({
   // Относительные пути: сайт работает и в корне домена, и в подпапке.
   base: './',
   plugins: [preact()],
+  worker: { format: 'es' },
   build: {
     target: ['es2020', 'safari15'],
     assetsInlineLimit: 0,

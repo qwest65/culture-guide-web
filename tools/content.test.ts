@@ -80,8 +80,15 @@ describe('озвучка', () => {
     expect(bundle!.places.find((p) => p.id === 'passazh-yaushevykh')!.audio).toMatch(/^audio\/troitsk\/passazh-yaushevykh\.mp3\?v=/);
   });
   it('объект без озвучки показывается без кнопки «Слушать»', () => {
-    const { bundle } = buildCity(troitsk());
+    const raw = troitsk();
+    delete (raw.audio as any).files['pamyatnik-plevako'];
+    const { bundle, report } = buildCity(raw);
+    expect(report.warnings.join('\n')).toContain('pamyatnik-plevako — нет озвучки');
     expect(bundle!.places.find((p) => p.id === 'pamyatnik-plevako')!.audio).toBeUndefined();
+  });
+  it('озвучены все объекты Троицка', () => {
+    const { bundle } = buildCity(troitsk());
+    expect(bundle!.places.filter((p) => !p.audio).map((p) => p.id)).toEqual([]);
   });
 });
 

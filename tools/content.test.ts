@@ -42,10 +42,10 @@ describe('buildCity', () => {
 
   it('опубликованный объект без источников — ошибка', () => {
     const raw = troitsk();
-    const p = (raw.places as any).places.find((x: any) => x.id === 'torgovye-ryady');
+    const p = (raw.places as any).places.find((x: any) => x.id === 'bronzovyy-verblyud');
     p.status = 'published';
     const errors = buildCity(raw).report.errors.join('\n');
-    expect(errors).toContain('torgovye-ryady — опубликован, но нет источников');
+    expect(errors).toContain('bronzovyy-verblyud — опубликован, но нет источников');
   });
 
   it('черновик не попадает в приложение, а маршрут через него — ошибка', () => {

@@ -45,6 +45,26 @@
       "text_hash": "8dc983cb1bb9",
       "voice": "ermil",
       "source": "Маленький караван: stopN_parent.mp3 (Яндекс SpeechKit, тот же текст)"
+    },
+    "kraevedcheskiy-muzey": {
+      "text_hash": "04e145bed91c",
+      "voice": "ermil"
+    },
+    "pamyatnik-plevako": {
+      "text_hash": "6823ab105df0",
+      "voice": "ermil"
+    },
+    "mechet-gataully-mully": {
+      "text_hash": "fd8df01d2fcd",
+      "voice": "ermil"
+    },
+    "vodonapornaya-bashnya": {
+      "text_hash": "ddb5368d634c",
+      "voice": "ermil"
+    },
+    "pamyatnik-neplyuevu": {
+      "text_hash": "4b280bf4cf2b",
+      "voice": "ermil"
     }
   }
 }

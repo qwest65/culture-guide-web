@@ -4,3 +4,6 @@ public/data/
 test-results/
 *.log
 .DS_Store
+__pycache__/
+*.pyc
+samples/

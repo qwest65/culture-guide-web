@@ -12,6 +12,13 @@ name: Voice
 # ai.speechkit-tts.user (можно тот же, что в «Маленьком караване»):
 # Settings → Secrets and variables → Actions → New repository secret.
 on:
+  # Сам — когда поменялись тексты или словарь: озвучивает только новое и изменённое.
+  push:
+    branches: [main, "claude/**"]
+    paths:
+      - "content/**"
+      - "tools/generate_audio.py"
+      - ".github/workflows/voice.yml"
   workflow_dispatch:
     inputs:
       mode:
@@ -69,7 +76,7 @@ jobs:
         if: inputs.mode != 'samples'
         env:
           YANDEX_SPEECHKIT_KEY: ${{ secrets.YANDEX_SPEECHKIT_KEY }}
-        run: python3 tools/generate_audio.py ${{ inputs.city }} --voice ${{ inputs.voice }} ${{ inputs.mode == 'all' && '--all' || '' }}
+        run: python3 tools/generate_audio.py ${{ inputs.city }} --voice ${{ inputs.voice || 'ermil' }} ${{ inputs.mode == 'all' && '--all' || '' }}
       - name: Коммит
         id: commit
         if: inputs.mode != 'samples'
@@ -81,7 +88,7 @@ jobs:
             exit 0
           fi
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -q -m "Озвучка: ${{ inputs.mode }}, голос ${{ inputs.voice }}"
+            commit -q -m "Озвучка: ${{ inputs.mode || 'missing' }}, голос ${{ inputs.voice || 'ermil' }}"
           git pull -q --rebase && git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
 

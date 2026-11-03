@@ -48,7 +48,7 @@ public/
 | `people` | нет | `{ "name", "role", "years"?, "attribution"? }`. Роли: `architect`, `sculptor`, `artist`, `engineer`, `customer`, `founder`, `subject`. `"attribution": "probable"` — «предположительно» |
 | `heritage` | нет | `{ "level": "federal" \| "regional" \| "local" \| "identified", "registry_id"? }` |
 | `sources` | для `published` | `{ "title", "url"?, "publisher"?, "year"? }` |
-| `photos` | нет | у каждого фото обязательны `author` и `license`, иначе проверка не пройдёт |
+| `photos` | нет | `src` — путь от `public/` (`photos/<город>/<id>.jpg`); обязательны `author` и `license`, иначе проверка не пройдёт. Первое фото — обложка места в плитке и карточке |
 | `then_now` | нет | «было/стало»: архивное и современное фото и точка съёмки |
 | `editorial` | нет | для редакции, в приложение не попадает: `location_source`, `todo`, `fact_checked_by`, `fact_checked_on` |
 

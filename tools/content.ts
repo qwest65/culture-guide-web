@@ -111,7 +111,7 @@ export function buildCity(raw: RawCity): CityResult {
     if (!inBBox(p.location, c.bbox)) report.errors.push(`${where} — координата вне района города (bbox)`);
     if (p.listen_at && !inBBox(p.listen_at, c.bbox)) report.errors.push(`${where} — listen_at вне района города`);
     for (const ph of [...p.photos, ...p.then_now.flatMap((t) => [t.then, t.now])]) {
-      if (!/^https?:/.test(ph.src) && !raw.fileExists(ph.src)) report.errors.push(`${where} — нет файла фото ${ph.src}`);
+      if (!/^https?:/.test(ph.src) && !(raw.publicExists ?? raw.fileExists)(ph.src)) report.errors.push(`${where} — нет файла фото public/${ph.src}`);
     }
     if (p.status === 'published') {
       for (const gap of publishedGaps(p)) report.errors.push(`${where} — опубликован, но ${gap}`);
@@ -191,6 +191,11 @@ export function buildCity(raw: RawCity): CityResult {
   }
 
   if (report.errors.length > 0) return { bundle: null, lexicon: null, report };
+
+  if (c.cover && !byId.has(c.cover)) report.errors.push(`${dir}/city.json: cover — нет объекта «${c.cover}»`);
+  if (c.featured_route && !routeIds.has(c.featured_route)) {
+    report.errors.push(`${dir}/city.json: featured_route — нет маршрута «${c.featured_route}»`);
+  }
 
   // Озвучка: файл есть и записан с того же текста — иначе предупреждение.
   const audioFiles = audio.data.files;

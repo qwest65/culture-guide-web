@@ -24,6 +24,22 @@ export function PlaceScreen({ city: cityId, id }: { city: string; id: string }) 
     <>
       <TopBar back={{ href: href.city(cityId), label: data.value.city.name }} />
       <main id="main" class="page">
+        {place.photos[0] && (
+          <figure class="place-photo">
+            <img src={import.meta.env.BASE_URL + place.photos[0].src} alt={place.photos[0].caption} loading="eager" />
+            <figcaption>
+              {place.photos[0].caption}. Фото:{' '}
+              {place.photos[0].source_url ? (
+                <a href={place.photos[0].source_url} target="_blank" rel="noopener noreferrer">
+                  {place.photos[0].author}
+                </a>
+              ) : (
+                place.photos[0].author
+              )}
+              , {place.photos[0].license}
+            </figcaption>
+          </figure>
+        )}
         <PageTitle eyebrow={CATEGORY[place.category]}>{place.name}</PageTitle>
         <p class="meta">{place.address}</p>
         {place.heritage && <p class="badge">{HERITAGE[place.heritage.level]}</p>}

@@ -4,6 +4,7 @@ import { href } from '../router';
 import { LoadError, Loading, NotFound, PageTitle, TopBar } from '../ui';
 import { routeMeta } from './City';
 import { savedProgress } from '../walk/session';
+import { startWalk } from '../walk/start';
 
 export function RouteScreen({ city: cityId, id }: { city: string; id: string }) {
   const [data, retry] = useAsync(() => loadCity(cityId), [cityId]);
@@ -29,9 +30,9 @@ export function RouteScreen({ city: cityId, id }: { city: string; id: string }) 
         <PageTitle eyebrow="Маршрут">{route.title}</PageTitle>
         <p class="meta">{routeMeta(route)}</p>
         <p class="lead">{route.description}</p>
-        <a class="button button-primary" href={href.walk(cityId, route.id)}>
-          {resume ? `Продолжить прогулку · точка ${progress!.active + 1}` : 'Начать прогулку'}
-        </a>
+        <button type="button" class="button button-primary" onClick={() => startWalk(cityId, route.id)}>
+          {resume ? `▶ Продолжить прогулку · место ${progress!.active + 1}` : '▶ Начать прогулку'}
+        </button>
         {route.duration_estimated && (
           <p class="note">Время — оценка с учётом рассказов на остановках; уточним после прохода маршрута.</p>
         )}

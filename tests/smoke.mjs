@@ -55,21 +55,21 @@ try {
   page.on('pageerror', (e) => problems.push(`page: ${e.message}`));
   page.on('response', (r) => r.status() >= 400 && problems.push(`HTTP ${r.status()} ${r.url()}`));
 
-  await step('главная: список городов', async () => {
+  await step('главная: сразу путеводитель по Троицку', async () => {
     await page.goto(BASE);
-    await page.getByRole('link', { name: /Троицк/ }).waitFor();
-    await page.screenshot({ path: 'test-results/01-home.png' });
-  });
-
-  await step('город определяется по геопозиции', async () => {
-    await page.getByRole('button', { name: /Определить мой город/ }).click();
     await page.getByRole('heading', { level: 1, name: 'Троицк' }).waitFor();
-    if (!page.url().endsWith('#/troitsk')) throw new Error(`адрес ${page.url()}`);
-    await page.screenshot({ path: 'test-results/02-city.png', fullPage: true });
+    await page.getByRole('button', { name: /Начать прогулку/ }).waitFor();
+    if ((await page.locator('.route-card').count()) !== 4) throw new Error('не 4 маршрута');
+    if ((await page.locator('.tile').count()) !== 14) throw new Error('не 14 мест');
+    await page.screenshot({ path: 'test-results/01-home.png' });
+    await page.locator('.places-map').scrollIntoViewIfNeeded();
+    await page.locator('.places-map .maplibregl-canvas').waitFor({ timeout: 15000 });
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: 'test-results/02-home-full.png', fullPage: true });
   });
 
   await step('маршрут: остановки по порядку', async () => {
-    await page.locator('a.card', { hasText: 'Исторический центр' }).click();
+    await page.locator('.route-card-link', { hasText: 'Исторический центр' }).click();
     await page.getByRole('heading', { level: 1, name: 'Исторический центр' }).waitFor();
     const stops = await page.locator('.stops > li').count();
     if (stops !== 7) throw new Error(`остановок ${stops}, ожидалось 7`);
@@ -103,10 +103,10 @@ try {
       if (r.url().includes('/map/troitsk/tiles/') && r.ok()) tiles++;
       if (r.url().includes('/map/troitsk/sprites/') && r.ok()) sprite++;
     });
-    await page.goto(`${BASE}#/troitsk/route/istoricheskiy-tsentr`);
-    await page.getByRole('link', { name: /Начать прогулку/ }).click();
-    await page.locator('.maplibregl-canvas').waitFor({ timeout: 15000 });
-    await page.getByRole('button', { name: 'Начать прогулку' }).click();
+    await page.goto(`${BASE}#/troitsk`);
+    // «Начать» прямо на карточке маршрута — прогулка стартует без второй кнопки.
+    await page.locator('.route-card', { hasText: 'Исторический центр' }).getByRole('button', { name: /Начать/ }).click();
+    await page.locator('.walk .maplibregl-canvas').waitFor({ timeout: 15000 });
     await page.getByText('Точка 1 из 7').waitFor();
     // Путь «от меня» по улицам строится, на плашке — расстояние.
     await page.locator('.walk-banner', { hasText: /м/ }).waitFor({ timeout: 10000 });
@@ -132,7 +132,7 @@ try {
     await page.getByRole('heading', { name: 'Свято-Троицкий собор' }).waitFor();
     await page.getByRole('button', { name: 'Идём дальше' }).click();
     await page.goto(`${BASE}#/troitsk/route/istoricheskiy-tsentr`);
-    await page.getByRole('link', { name: /Продолжить прогулку · точка 3/ }).waitFor();
+    await page.getByRole('button', { name: /Продолжить прогулку · место 3/ }).waitFor();
   });
 
   await step('крупный шрифт включается и запоминается', async () => {
@@ -157,6 +157,7 @@ try {
   await step('нет горизонтальной прокрутки', async () => {
     await page.goto(`${BASE}#/troitsk`);
     await page.getByRole('heading', { level: 1 }).waitFor();
+    await page.waitForTimeout(300);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     if (overflow > 0) throw new Error(`страница шире экрана на ${overflow}px`);
   });

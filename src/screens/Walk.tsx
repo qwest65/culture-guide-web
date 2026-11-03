@@ -9,6 +9,7 @@ import { browserLink, compassNeedsTap, inAppBrowser, isIOS, keepAwake, requestCo
 import type { StopMark, WalkMap } from '../walk/map';
 import { player } from '../walk/player';
 import { WalkSession, type WalkView } from '../walk/session';
+import { takeAutostart } from '../walk/start';
 import { geoMessage } from '../walk/tracker';
 
 const TURN_WORD: Record<Turn, string> = {
@@ -66,7 +67,9 @@ function Walk({ bundle, route }: { bundle: CityBundle; route: RouteData }) {
       m.onFollowChange = setFollowing;
       m.setRoute(session.legs.length ? session.legs : [session.stops.map((s) => [s.location.lat, s.location.lon] as Pt)]);
       mapRef.current = m;
-      fitAll();
+      // Прогулка уже началась (автостарт) — сразу навигатор, иначе весь маршрут.
+      if (session.view.started) m.follow();
+      else fitAll();
       drawStops(session.view);
     });
     return () => {
@@ -113,6 +116,12 @@ function Walk({ bundle, route }: { bundle: CityBundle; route: RouteData }) {
     keepAwake(true);
     mapRef.current?.follow();
   };
+
+  // Пришли по кнопке «Начать прогулку» — звук уже разблокирован тем нажатием, стартуем сразу.
+  useEffect(() => {
+    if (takeAutostart(bundle.city.id, route.id)) start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   const enableCompass = async () => {
     setCompassAsked(true);

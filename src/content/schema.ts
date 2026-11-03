@@ -72,6 +72,7 @@ export const Source = z.object({
 
 /** Фото с правами. Своих фото нет — поэтому без автора и лицензии фото не принимается. */
 export const Photo = z.object({
+  /** Путь от public/: photos/<город>/<файл>.jpg. */
   src: z.string().min(1),
   kind: z.enum(['modern', 'archive']),
   caption: z.string().min(3),
@@ -159,6 +160,12 @@ export const City = z.object({
   /** Район, на который строятся карта и пешеходный граф. */
   bbox: z.object({ south: z.number(), west: z.number(), north: z.number(), east: z.number() }),
   intro: z.string().min(20),
+  /** Подзаголовок на обложке: «Купеческая столица степного края». */
+  tagline: z.string().max(80).optional(),
+  /** Объект, чьё фото — обложка города. */
+  cover: Slug.optional(),
+  /** Маршрут для кнопки «Начать прогулку» на обложке. */
+  featured_route: Slug.optional(),
   credits: z.array(z.object({ role: z.string(), name: z.string() })).default([]),
   editorial: Editorial,
 });

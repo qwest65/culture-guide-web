@@ -575,60 +575,272 @@ a.button {
   opacity: 1;
 }
 
-/* ---------- Стартовая страница ---------- */
+/* ---------- Путеводитель по городу (главная) ---------- */
 
-.features {
-  list-style: none;
-  margin: 8px 0 8px;
-  padding: 0;
-  display: grid;
-  gap: 10px;
+.guide {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 48px);
 }
-.features li {
-  display: grid;
-  align-content: start;
-  gap: 2px;
-  padding-left: 14px;
-  border-left: 3px solid var(--mark);
+.hero {
+  position: relative;
+  min-height: min(78vh, 640px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  color: #fff;
+  /* Без фото — тёплый «закат над степью» */
+  background: radial-gradient(120% 80% at 80% 0%, #e3a07a 0%, transparent 55%),
+    linear-gradient(160deg, #8a3b12 0%, #4a2a1a 45%, #1d2a33 100%);
+  background-size: cover;
+  background-position: center;
 }
-.features b {
-  font-family: var(--font-head);
-  font-size: 1.05rem;
+.hero-photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(0 0 0 / 0.05) 30%, rgb(0 0 0 / 0.72) 100%);
 }
-.features span {
-  color: var(--muted);
-  font-size: 0.92rem;
+.hero-inner {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px var(--gutter) 28px;
 }
-@media (min-width: 640px) {
-  .features {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-.city-card {
-  gap: 8px;
-  padding: 20px;
-}
-.city-title {
-  font-size: 1.7rem;
-}
-.highlights {
+.city-switch {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  margin-bottom: 12px;
 }
-.chip {
-  padding: 3px 10px;
-  border: 1px solid var(--line);
+.city-switch a {
+  padding: 4px 12px;
   border-radius: 999px;
-  font-size: 0.82rem;
+  background: rgb(255 255 255 / 0.18);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.city-switch a[aria-current='page'] {
+  background: #fff;
+  color: #1d1b18;
+}
+.hero-region {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.hero-title {
+  margin: 2px 0 4px;
+  font: 600 clamp(3rem, 14vw, 5rem) / 1 var(--font-head);
+  text-shadow: 0 2px 18px rgb(0 0 0 / 0.35);
+}
+.hero-title:focus {
+  outline: none;
+}
+.hero-tagline {
+  margin: 0 0 20px;
+  font-size: 1.15rem;
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.4);
+}
+.hero-actions {
+  display: grid;
+  gap: 8px;
+}
+.button-hero {
+  min-height: 56px;
+  border: 0;
+  background: #c75b12;
+  color: #fff;
+  font-size: 1.15rem;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.3);
+}
+.hero-hint {
+  font-size: 0.9rem;
+  opacity: 0.92;
+}
+.hero-credit {
+  position: relative;
+  margin: 0;
+  padding: 0 var(--gutter) 8px;
+  font-size: 0.7rem;
+  opacity: 0.75;
+  text-align: right;
+}
+.guide-body {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px var(--gutter) 0;
+}
+.facts-row {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.facts-row li {
+  padding: 10px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+}
+.facts-row b {
+  display: block;
+  font: 600 1.6rem/1.1 var(--font-head);
+  color: var(--mark);
+}
+
+/* Маршруты — карточки с фото, листаются вбок */
+.route-cards {
+  list-style: none;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter) 8px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(82%, 320px);
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+}
+.route-card {
+  scroll-snap-align: start;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.route-card-link {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  color: var(--ink);
+  text-decoration: none;
+}
+.route-card-img {
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(150deg, #c75b12, #233d4d) center / cover;
+  background-size: cover;
+  background-position: center;
+}
+.route-card-body {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 12px 14px 4px;
+}
+.clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.route-start {
+  margin: 8px 14px 14px;
+  width: auto;
+}
+
+/* Достопримечательности — плитка с фото */
+.tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+@media (min-width: 640px) {
+  .tiles {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.tile {
+  display: grid;
+  gap: 2px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.tile-img {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 4px;
+}
+.tile-img.no-photo {
+  background-image: linear-gradient(150deg, #8a3b12, #233d4d);
+}
+.tile-img.cat-religion.no-photo {
+  background-image: linear-gradient(150deg, #a07a2a, #4a2a1a);
+}
+.tile-img.cat-monument.no-photo {
+  background-image: linear-gradient(150deg, #5b6b58, #233d4d);
+}
+.tile-img.cat-museum.no-photo,
+.tile-img.cat-history.no-photo {
+  background-image: linear-gradient(150deg, #7a4a6a, #233d4d);
+}
+.tile-letter {
+  font: 600 2.6rem var(--font-head);
+  color: rgb(255 255 255 / 0.85);
+}
+.tile-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+.tile-sub {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* Карта всех мест */
+.places-map {
+  height: 380px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ece6da;
+}
+.places-map-legend {
+  margin: 12px 0 0;
+  padding-left: 1.4em;
+  columns: 2;
+  column-gap: 16px;
+  font-size: 0.85rem;
+}
+.places-map-legend li {
+  break-inside: avoid;
+  padding: 2px 0;
+}
+
+.place-photo {
+  margin: -20px calc(-1 * var(--gutter)) 12px;
+}
+.place-photo img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.place-photo figcaption {
+  padding: 6px var(--gutter) 0;
+  font-size: 0.75rem;
   color: var(--muted);
 }
-.city-open {
-  margin-top: 4px;
-  color: var(--link);
-  font-weight: 600;
-}
-.geo-button {
-  margin: 0;
-  padding-left: 0;
+@media (min-width: 680px) {
+  .place-photo {
+    margin: 0 0 12px;
+  }
+  .place-photo img {
+    border-radius: 16px;
+  }
 }

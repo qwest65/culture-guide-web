@@ -150,7 +150,7 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
                 {c.role}: {c.name}
               </p>
             ))}
-            {places.some((p) => p.photos.length) && <p>Фото — Викисклад, авторы и лицензии указаны в карточках мест.</p>}
+            {places.some((p) => p.photos.length) && <p>Фото — команда проекта и Викисклад; авторы и лицензии указаны в карточках мест.</p>}
             <p>Голос — Яндекс SpeechKit.</p>
           </footer>
         </div>

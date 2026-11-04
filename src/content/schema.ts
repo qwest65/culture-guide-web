@@ -80,6 +80,9 @@ export const Photo = z.object({
   author: z.string().min(2),
   license: z.string().min(2),
   source_url: z.url().optional(),
+  /** Какую часть кадра держать в центре при обрезке (CSS object-position), например «50% 20%» —
+   *  чтобы у вертикальных снимков в плитке 4:3 не срезались головы и шляпы. По умолчанию — центр. */
+  focus: z.string().regex(/^\d{1,3}% \d{1,3}%$/, 'в виде «50% 20%»').optional(),
 });
 
 /**

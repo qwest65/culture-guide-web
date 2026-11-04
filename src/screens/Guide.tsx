@@ -15,6 +15,9 @@ import { startWalk } from '../walk/start';
 
 const base = import.meta.env.BASE_URL;
 const photoOf = (p: PlaceData | undefined) => (p?.photos[0] ? base + p.photos[0].src : null);
+/** Фон-фото с учётом того, какую часть кадра держать в центре. */
+const photoStyle = (p: PlaceData | undefined) =>
+  p?.photos[0] ? { backgroundImage: `url("${base + p.photos[0].src}")`, backgroundPosition: p.photos[0].focus ?? 'center' } : undefined;
 
 export function routeTime(r: RouteData): string {
   return `${r.duration_estimated ? '≈ ' : ''}${formatDuration(r.duration_min)}`;
@@ -39,7 +42,7 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
       <main id="main" class="guide">
         <section
           class={`hero${coverPhoto ? ' hero-photo' : ''}`}
-          style={coverPhoto ? { backgroundImage: `url("${coverPhoto}")` } : undefined}
+          style={photoStyle(cover)}
         >
           <div class="hero-inner">
             {cities && cities.cities.length > 1 && (
@@ -93,13 +96,14 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
           </h2>
           <ul class="route-cards" role="list">
             {routes.map((r) => {
-              const photo = photoOf(r.stops.map((s) => byId.get(s)).find((p) => p?.photos.length));
+              const withPhoto = r.stops.map((s) => byId.get(s)).find((p) => p?.photos.length);
+              const photo = photoOf(withPhoto);
               return (
                 <li key={r.id} class="route-card">
                   <a class="route-card-link" href={href.route(city.id, r.id)}>
                     <span
                       class={`route-card-img${photo ? '' : ' no-photo'}`}
-                      style={photo ? { backgroundImage: `url("${photo}")` } : undefined}
+                      style={photoStyle(withPhoto)}
                       aria-hidden="true"
                     />
                     <span class="route-card-body">
@@ -128,7 +132,7 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
                   <a class="tile" href={href.place(city.id, p.id)}>
                     <span
                       class={`tile-img cat-${p.category}${photo ? '' : ' no-photo'}`}
-                      style={photo ? { backgroundImage: `url("${photo}")` } : undefined}
+                      style={photoStyle(p)}
                       aria-hidden="true"
                     >
                       {!photo && <span class="tile-letter">{p.name.replace(/^[«"]/, '')[0]}</span>}

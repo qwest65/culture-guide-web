@@ -26,7 +26,12 @@ export function PlaceScreen({ city: cityId, id }: { city: string; id: string }) 
       <main id="main" class="page">
         {place.photos[0] && (
           <figure class="place-photo">
-            <img src={import.meta.env.BASE_URL + place.photos[0].src} alt={place.photos[0].caption} loading="eager" />
+            <img
+              src={import.meta.env.BASE_URL + place.photos[0].src}
+              alt={place.photos[0].caption}
+              loading="eager"
+              style={{ objectPosition: place.photos[0].focus ?? 'center' }}
+            />
             <figcaption>
               {place.photos[0].caption}. Фото:{' '}
               {place.photos[0].source_url ? (

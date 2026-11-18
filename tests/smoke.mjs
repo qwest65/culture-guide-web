@@ -155,6 +155,8 @@ try {
     if (await page.getByRole('radio', { name: 'Съ Новымъ годомъ!' }).count())
       throw new Error('новогодний повод виден вне праздников');
     await page.locator('.pc-preview.ready').waitFor({ timeout: 15000 });
+    await page.getByLabel(/Надпись/).fill('Вот и мы на Уе!');
+    if (await page.getByRole('radio', { checked: true }).count()) throw new Error('своя надпись не сняла выбор повода');
     await page.getByPlaceholder('Дорогой маме').fill('Дорогой маме');
     await page.waitForTimeout(400);
     const filled = await page.locator('.pc-preview canvas').evaluate((c) => {

@@ -92,7 +92,9 @@ function Postcard({ data }: { data: CityBundle }) {
   const [oldSpelling, setOldSpelling] = useState(true);
   const [occ, setOcc] = useState<Occasion>(occasions.find((o) => o.key === (holidays ? 'ny' : 'hello'))!);
   const greetingOf = (o: Occasion, old: boolean) => (old ? o.old : o.modern).replace('{from}', fromCity(old));
-  const greeting = greetingOf(occ, oldSpelling);
+  /** Своя надпись: пока null — берётся подпись выбранного повода. */
+  const [custom, setCustom] = useState<string | null>(null);
+  const greeting = custom?.trim() ? custom.trim() : greetingOf(occ, oldSpelling);
   const [wish, setWish] = useState(occ.wishOld);
   const [wishEdited, setWishEdited] = useState(false);
   const [to, setTo] = useState('');
@@ -152,7 +154,7 @@ function Postcard({ data }: { data: CityBundle }) {
     const t = setTimeout(redraw, 60);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [occ, wish, to, from, oldSpelling, current]);
+  }, [occ, custom, wish, to, from, oldSpelling, current]);
 
   const pickOwn = (file: File | undefined) => {
     if (!file) return;
@@ -238,10 +240,11 @@ function Postcard({ data }: { data: CityBundle }) {
               key={o.key}
               type="button"
               role="radio"
-              aria-checked={o.key === occ.key}
+              aria-checked={custom === null && o.key === occ.key}
               class="chip-btn"
               onClick={() => {
                 setOcc(o);
+                setCustom(null);
                 setWishEdited(false);
               }}
             >
@@ -255,6 +258,15 @@ function Postcard({ data }: { data: CityBundle }) {
         </label>
 
         <div class="pc-fields">
+          <label>
+            <span>Надпись — выберите выше или напишите свою</span>
+            <input
+              type="text"
+              maxLength={32}
+              value={custom ?? greeting}
+              onInput={(e) => setCustom((e.target as HTMLInputElement).value)}
+            />
+          </label>
           <label>
             <span>Пожелание</span>
             <textarea

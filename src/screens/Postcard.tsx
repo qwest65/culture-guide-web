@@ -1,6 +1,7 @@
 /**
  * «Открытка из Троицка» — на круглый год: выбрать вид (старая открытка, сегодняшнее фото или своё),
- * повод (привет, день рождения, праздник, «скучаю», Новый год, Рождество), пожелание, кому и от кого —
+ * повод («С любовью из Троицка», «Помню, люблю, скучаю», «Ждём в гости!», «Многая лета!»,
+ * «От всего сердца!», Новый год, Рождество), пожелание, кому и от кого —
  * и отправить. В праздники (15 декабря — 14 января) первым идёт «С Новым годом».
  */
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
@@ -22,10 +23,11 @@ type Occasion = { key: string; old: string; modern: string; wishOld: string; wis
 
 /** Поводы. {from} — «изъ Троицка» / «из Троицка». */
 const OCCASIONS: Occasion[] = [
-  { key: 'privet', old: 'Привѣтъ {from}!', modern: 'Привет {from}!', wishOld: 'Тепла, радости и добрыхъ встрѣчъ!', wishModern: 'Тепла, радости и добрых встреч!' },
-  { key: 'birthday', old: 'Съ днемъ рожденія!', modern: 'С днём рождения!', wishOld: 'Здоровья, счастья и долгихъ лѣтъ!', wishModern: 'Здоровья, счастья и долгих лет!' },
-  { key: 'holiday', old: 'Съ праздникомъ!', modern: 'С праздником!', wishOld: 'Радости, тепла и добраго настроенія!', wishModern: 'Радости, тепла и доброго настроения!' },
-  { key: 'miss', old: 'Скучаю и жду встрѣчи!', modern: 'Скучаю и жду встречи!', wishOld: 'Пріѣзжай — пройдемся по старому городу.', wishModern: 'Приезжай — пройдёмся по старому городу.' },
+  { key: 'love', old: 'Съ любовью {from}', modern: 'С любовью {from}', wishOld: 'Здѣсь все такъ же дорого сердцу. Обнимаю!', wishModern: 'Здесь всё так же дорого сердцу. Обнимаю!' },
+  { key: 'remember', old: 'Помню, люблю, скучаю', modern: 'Помню, люблю, скучаю', wishOld: 'Пріѣзжай — пройдемся по старымъ улицамъ.', wishModern: 'Приезжай — пройдёмся по старым улицам.' },
+  { key: 'guests', old: 'Ждемъ въ гости!', modern: 'Ждём в гости!', wishOld: 'Самоваръ поставимъ, по городу погуляемъ.', wishModern: 'Самовар поставим, по городу погуляем.' },
+  { key: 'birthday', old: 'Многая лѣта!', modern: 'Многая лета!', wishOld: 'Съ днемъ рожденія! Здоровья, радости и тепла.', wishModern: 'С днём рождения! Здоровья, радости и тепла.' },
+  { key: 'heart', old: 'Отъ всего сердца!', modern: 'От всего сердца!', wishOld: 'Спасибо, что вы есть.', wishModern: 'Спасибо, что вы есть.' },
   { key: 'ny', old: 'Съ Новымъ годомъ!', modern: 'С Новым годом!', wishOld: 'Счастья, тепла и добрыхъ встрѣчъ въ новомъ году!', wishModern: 'Счастья, тепла и добрых встреч в новом году!', snow: true },
   { key: 'xmas', old: 'Съ Рождествомъ Христовымъ!', modern: 'С Рождеством!', wishOld: 'Мира, тепла и радости вашему дому!', wishModern: 'Мира, тепла и радости вашему дому!', snow: true },
 ];
@@ -79,7 +81,7 @@ function Postcard({ data }: { data: CityBundle }) {
   const [view, setView] = useState<View>(views[0]);
   const [own, setOwn] = useState<View | null>(null);
   const [oldSpelling, setOldSpelling] = useState(true);
-  const [occ, setOcc] = useState<Occasion>(OCCASIONS.find((o) => o.key === (holidays ? 'ny' : 'privet'))!);
+  const [occ, setOcc] = useState<Occasion>(OCCASIONS.find((o) => o.key === (holidays ? 'ny' : 'love'))!);
   const greetingOf = (o: Occasion, old: boolean) => (old ? o.old : o.modern).replace('{from}', fromCity(old));
   const greeting = greetingOf(occ, oldSpelling);
   const [wish, setWish] = useState(occ.wishOld);

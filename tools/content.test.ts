@@ -23,7 +23,7 @@ describe('buildCity', () => {
     const { bundle, report } = buildCity(troitsk());
     expect(report.errors).toEqual([]);
     expect(bundle!.places.length).toBe(14);
-    expect(bundle!.routes.length).toBe(4);
+    expect(bundle!.routes.length).toBe(5);
     // редакционные пометки в приложение не попадают
     expect(JSON.stringify(bundle)).not.toContain('"editorial"');
     for (const r of bundle!.routes) {
@@ -50,6 +50,8 @@ describe('buildCity', () => {
 
   it('черновик не попадает в приложение, а маршрут через него — ошибка', () => {
     const raw = troitsk();
+    // черновик, не входящий ни в один маршрут, просто не показывается
+    (raw.routes as any).routes = (raw.routes as any).routes.filter((r: any) => !r.stops.includes('bronzovyy-verblyud'));
     (raw.places as any).places.find((x: any) => x.id === 'bronzovyy-verblyud').status = 'draft';
     const { bundle } = buildCity(raw);
     expect(bundle!.places.map((p) => p.id)).not.toContain('bronzovyy-verblyud');

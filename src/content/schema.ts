@@ -154,6 +154,8 @@ export const Route = z.object({
   stops: z.array(Slug).min(2),
   /** Ручная длительность, мин. Если нет — оценивается при сборке. */
   duration_min: z.number().int().positive().optional(),
+  /** Сезонный маршрут: показывается только в свой сезон (winter — с 15 ноября по 14 января). */
+  season: z.enum(['winter']).optional(),
 });
 
 export const City = z.object({
@@ -162,6 +164,8 @@ export const City = z.object({
   name: z.string().min(2),
   /** «в Троицке» — для фраз в интерфейсе. */
   name_prepositional: z.string().min(2),
+  /** «из Троицка» — для новогодней открытки. */
+  name_genitive: z.string().min(2).optional(),
   region: z.string().min(2),
   timezone: z.string().min(3),
   center: LatLon,
@@ -172,6 +176,8 @@ export const City = z.object({
   tagline: z.string().max(80).optional(),
   /** Объект, чьё фото — обложка города. */
   cover: Slug.optional(),
+  /** Место, чей старый снимок открывается первым в новогодней открытке. */
+  postcard_view: Slug.optional(),
   /** Маршрут для кнопки «Начать прогулку» на обложке. */
   featured_route: Slug.optional(),
   credits: z.array(z.object({ role: z.string(), name: z.string() })).default([]),

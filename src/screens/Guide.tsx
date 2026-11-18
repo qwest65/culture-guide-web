@@ -12,6 +12,8 @@ import { save } from '../storage';
 import { TopBar } from '../ui';
 import type { Pt } from '../lib/streets';
 import { startWalk } from '../walk/start';
+import { isWinter } from '../lib/season';
+import { loadOldStandard } from '../postcard/fonts';
 
 const base = import.meta.env.BASE_URL;
 const photoOf = (p: PlaceData | undefined) => (p?.photos[0] ? base + p.photos[0].src : null);
@@ -24,11 +26,19 @@ export function routeTime(r: RouteData): string {
 }
 
 export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndexData }) {
-  const { city, routes, places } = data;
+  const winter = isWinter();
+  const { city, places } = data;
+  // сезонные маршруты — только в свой сезон, и тогда первыми
+  const routes = data.routes.filter((r) => !r.season || (r.season === 'winter' && winter));
   const byId = new Map(places.map((p) => [p.id, p]));
   const cover = byId.get(city.cover ?? '') ?? places.find((p) => p.photos.length);
-  const featured = routes.find((r) => r.id === city.featured_route) ?? routes[0];
+  const featured =
+    (winter && routes.find((r) => r.season === 'winter')) || routes.find((r) => r.id === city.featured_route) || routes[0];
   const heroRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (winter) loadOldStandard();
+  }, [winter]);
 
   useEffect(() => {
     save('lastCity', city.id);
@@ -46,6 +56,7 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
           class={`hero${coverPhoto ? ' hero-photo' : ''}`}
           style={photoStyle(cover)}
         >
+          {winter && <Snow />}
           {coverThen && (
             <div class="hero-then" style={{ backgroundImage: `url("${base + coverThen.src}")` }} aria-hidden="true" />
           )}
@@ -70,15 +81,28 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
               {city.name}
             </h1>
             {city.tagline && <p class="hero-tagline">{city.tagline}</p>}
-            {featured && (
+            {winter ? (
               <div class="hero-actions">
-                <button type="button" class="button button-hero" onClick={() => startWalk(city.id, featured.id)}>
-                  ▶ Начать прогулку
-                </button>
-                <span class="hero-hint">
-                  «{featured.title}» · {routeTime(featured)} · {formatDistance(featured.distance_m)}
-                </span>
+                <a class="button button-hero button-winter" href={href.card(city.id)}>
+                  ✉ Новогодняя открытка
+                </a>
+                {featured && (
+                  <button type="button" class="hero-secondary" onClick={() => startWalk(city.id, featured.id)}>
+                    ▶ или пройтись: «{featured.title}» · {routeTime(featured)}
+                  </button>
+                )}
               </div>
+            ) : (
+              featured && (
+                <div class="hero-actions">
+                  <button type="button" class="button button-hero" onClick={() => startWalk(city.id, featured.id)}>
+                    ▶ Начать прогулку
+                  </button>
+                  <span class="hero-hint">
+                    «{featured.title}» · {routeTime(featured)} · {formatDistance(featured.distance_m)}
+                  </span>
+                </div>
+              )
             )}
           </div>
           {cover?.photos[0] && (
@@ -102,6 +126,19 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
               <b>{places.filter((p) => p.audio).length}</b> рассказов голосом
             </li>
           </ul>
+
+          {winter && withPast[0] && (
+            <a class="winter-card" href={href.card(city.id)}>
+              <span class="winter-card-img" style={{ backgroundImage: `url("${base + withPast.find((p) => p.id === city.postcard_view)?.then_now[0].then.src || base + withPast[0].then_now[0].then.src}")` }}>
+                <span class="winter-card-greet">Съ Новымъ годомъ!</span>
+              </span>
+              <span class="winter-card-body">
+                <b>Новогодняя открытка из {city.name_genitive ?? city.name}</b>
+                <span>Старинный вид родного города, ваше поздравление — и отправить маме, друзьям, тем, кто уехал далеко.</span>
+                <span class="city-open">Сделать открытку →</span>
+              </span>
+            </a>
+          )}
 
           {withPast.length > 0 && (
             <>
@@ -255,6 +292,32 @@ function PlacesMap({ data }: { data: CityBundle }) {
           </li>
         ))}
       </ol>
+    </div>
+  );
+}
+
+/** Снег на обложке: несколько десятков хлопьев, разные размеры, скорость и снос. */
+function Snow() {
+  const flakes = Array.from({ length: 46 }, (_, i) => {
+    const r = (n: number) => ((Math.sin(i * 12.9898 + n * 78.233) * 43758.5453) % 1 + 1) % 1;
+    const size = 3 + r(1) * 6;
+    return (
+      <span
+        key={i}
+        style={{
+          left: `${r(2) * 100}%`,
+          width: `${size}px`,
+          height: `${size}px`,
+          opacity: 0.5 + r(3) * 0.5,
+          animationDuration: `${7 + r(4) * 9}s, ${3 + r(5) * 3}s`,
+          animationDelay: `${-r(6) * 16}s, ${-r(7) * 6}s`,
+        }}
+      />
+    );
+  });
+  return (
+    <div class="snow" aria-hidden="true">
+      {flakes}
     </div>
   );
 }

@@ -9,7 +9,9 @@ import { mkdirSync } from 'node:fs';
 import { chromium, devices } from 'playwright';
 
 const PORT = 4173;
-const BASE = `http://localhost:${PORT}/`;
+const ROOT = `http://localhost:${PORT}/`;
+// Обычный сезон — чтобы тесты не зависели от даты; зима проверяется отдельно (?winter=1).
+const BASE = `${ROOT}?winter=0`;
 const TROITSK = { latitude: 54.0826, longitude: 61.5592 };
 
 const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', String(PORT), '--strictPort'], {
@@ -20,7 +22,7 @@ const stop = () => server.kill('SIGTERM');
 async function waitForServer() {
   for (let i = 0; i < 50; i++) {
     try {
-      if ((await fetch(BASE)).ok) return;
+      if ((await fetch(ROOT)).ok) return;
     } catch {}
     await new Promise((r) => setTimeout(r, 200));
   }
@@ -142,6 +144,23 @@ try {
     await page.getByRole('button', { name: 'Идём дальше' }).click();
     await page.goto(`${BASE}#/troitsk/route/istoricheskiy-tsentr`);
     await page.getByRole('button', { name: /Продолжить прогулку · место 3/ }).waitFor();
+  });
+
+  await step('зима: новогодняя открытка собирается', async () => {
+    await page.goto(`${ROOT}?winter=1#/troitsk`);
+    await page.getByRole('link', { name: /Новогодняя открытка/ }).first().click();
+    await page.locator('.pc-preview.ready').waitFor({ timeout: 15000 });
+    await page.getByPlaceholder('Дорогой маме').fill('Дорогой маме');
+    await page.waitForTimeout(400);
+    const filled = await page.locator('.pc-preview canvas').evaluate((c) => {
+      const d = c.getContext('2d').getImageData(c.width / 2 - 50, 300, 100, 100).data;
+      let sum = 0;
+      for (let i = 0; i < d.length; i += 4) sum += d[i];
+      return sum / (d.length / 4);
+    });
+    if (!(filled > 20 && filled < 250)) throw new Error(`фото на открытке не нарисовалось (${filled})`);
+    await page.getByRole('button', { name: /Отправить открытку/ }).first().waitFor();
+    await page.locator('.pc-preview').screenshot({ path: 'test-results/09-postcard.png' });
   });
 
   await step('крупный шрифт включается и запоминается', async () => {

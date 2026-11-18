@@ -4,6 +4,7 @@ import { CityScreen } from './screens/City';
 import { RouteScreen } from './screens/Route';
 import { PlaceScreen } from './screens/Place';
 import { WalkScreen } from './screens/Walk';
+import { PostcardScreen } from './screens/Postcard';
 import { NotFound } from './ui';
 
 export function App() {
@@ -15,6 +16,8 @@ export function App() {
       return <CityScreen key={route.city} id={route.city} />;
     case 'route':
       return <RouteScreen key={route.id} city={route.city} id={route.id} />;
+    case 'card':
+      return <PostcardScreen key={route.city} city={route.city} />;
     case 'walk':
       return <WalkScreen key={route.id} city={route.city} id={route.id} />;
     case 'place':

@@ -1,6 +1,21 @@
 {
   "routes": [
     {
+      "id": "zimnyaya-progulka",
+      "status": "review",
+      "season": "winter",
+      "title": "Зимняя прогулка по купеческому центру",
+      "description": "Короткий тёплый маршрут, чтобы не замёрзнуть: от бронзового верблюда на бывшей ярмарочной площади по улице Климова — мимо «Городового», гостиницы Башкирова и Крылова — к пассажу Яушевых. Около получаса.",
+      "stops": [
+        "bronzovyy-verblyud",
+        "tsentralnaya-ploshchad",
+        "skulptura-gorodovoy",
+        "gostinitsa-tsentralnaya",
+        "pamyatnik-krylovu",
+        "passazh-yaushevykh"
+      ]
+    },
+    {
       "id": "istoricheskiy-tsentr",
       "status": "review",
       "title": "Исторический центр",

@@ -8,6 +8,7 @@ import { useEffect, useState } from 'preact/hooks';
  *   #/troitsk/route/<id>     маршрут
  *   #/troitsk/route/<id>/walk  прогулка по маршруту: карта и навигатор
  *   #/troitsk/place/<id>     объект
+ *   #/troitsk/card           новогодняя открытка
  */
 export type Route =
   | { name: 'home' }
@@ -15,6 +16,7 @@ export type Route =
   | { name: 'route'; city: string; id: string }
   | { name: 'walk'; city: string; id: string }
   | { name: 'place'; city: string; id: string }
+  | { name: 'card'; city: string }
   | { name: 'not-found' };
 
 export function parseHash(hash: string): Route {
@@ -22,6 +24,7 @@ export function parseHash(hash: string): Route {
   if (parts.length === 0) return { name: 'home' };
   const [city, kind, id] = parts;
   if (parts.length === 1) return { name: 'city', city };
+  if (parts.length === 2 && kind === 'card') return { name: 'card', city };
   if (parts.length === 3 && kind === 'route') return { name: 'route', city, id };
   if (parts.length === 3 && kind === 'place') return { name: 'place', city, id };
   if (parts.length === 4 && kind === 'route' && parts[3] === 'walk') return { name: 'walk', city, id };
@@ -34,6 +37,7 @@ export const href = {
   route: (city: string, id: string) => `#/${city}/route/${id}`,
   place: (city: string, id: string) => `#/${city}/place/${id}`,
   walk: (city: string, id: string) => `#/${city}/route/${id}/walk`,
+  card: (city: string) => `#/${city}/card`,
 };
 
 export function useRoute(): Route {

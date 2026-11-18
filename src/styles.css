@@ -1177,3 +1177,249 @@ a.button {
     clip-path: inset(0 50% 0 0);
   }
 }
+
+/* ---------- Зима: снег, новогодняя открытка ---------- */
+
+.snow {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.snow span {
+  position: absolute;
+  top: -12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px rgb(255 255 255 / 0.8);
+  animation-name: snow-fall, snow-sway;
+  animation-timing-function: linear, ease-in-out;
+  animation-iteration-count: infinite, infinite;
+  animation-direction: normal, alternate;
+}
+@keyframes snow-fall {
+  to { transform: translateY(calc(min(78vh, 640px) + 24px)); }
+}
+@keyframes snow-sway {
+  from { margin-left: -14px; }
+  to { margin-left: 14px; }
+}
+.button-winter {
+  background: #7a1f1a;
+}
+.hero-secondary {
+  justify-self: start;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: 500 0.95rem var(--font-body);
+  text-align: left;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.5);
+  cursor: pointer;
+}
+.winter-card {
+  display: grid;
+  grid-template-columns: 42% 1fr;
+  margin: 20px 0 4px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f2e7cf;
+  border: 1px solid #d9c49a;
+  color: #2b1d14;
+  text-decoration: none;
+  box-shadow: 0 4px 18px rgb(120 80 30 / 0.15);
+}
+.winter-card-img {
+  position: relative;
+  min-height: 170px;
+  background-size: cover;
+  background-position: center;
+  filter: sepia(0.5);
+}
+.winter-card-img::after {
+  content: '';
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(transparent, rgb(40 20 10 / 0.75));
+}
+.winter-card-greet {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  font-size: 1rem !important;
+  white-space: nowrap;
+  text-align: center;
+  color: #fff;
+  font: 700 1.1rem "Old Standard TT", Georgia, serif;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.7);
+}
+.winter-card-body {
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 14px 16px;
+  font-size: 0.92rem;
+}
+.winter-card-body b {
+  font: 600 1.15rem/1.2 var(--font-head);
+  color: #7a1f1a;
+}
+
+/* Экран открытки */
+.pc-preview {
+  margin: 4px calc(-1 * var(--gutter)) 0;
+  padding: 0 var(--gutter);
+}
+.pc-preview canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  border-radius: 6px;
+  box-shadow: 0 10px 30px rgb(60 35 10 / 0.3);
+  background: #f2e7cf;
+  opacity: 0.4;
+  transition: opacity 0.4s;
+}
+.pc-preview.ready canvas {
+  opacity: 1;
+}
+.pc-send {
+  display: grid;
+  margin: 16px 0 4px;
+}
+.pc-send .button-hero {
+  background: #7a1f1a;
+}
+.pc-views {
+  list-style: none;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter) 6px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 96px;
+  gap: 10px;
+  overflow-x: auto;
+}
+.pc-view {
+  position: relative;
+  display: block;
+  width: 96px;
+  height: 96px;
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+  cursor: pointer;
+}
+.pc-view[aria-pressed='true'] {
+  border-color: #7a1f1a;
+}
+.pc-view img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pc-view img.sepia {
+  filter: sepia(0.5);
+}
+.pc-view-label {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.6);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.pc-own {
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--line);
+}
+.pc-own input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.pc-own-icon {
+  font-size: 2rem;
+}
+.pc-own .pc-view-label {
+  background: none;
+  color: var(--ink);
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+.pc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 400 1.05rem "Old Standard TT", Georgia, serif;
+  cursor: pointer;
+}
+.chip-btn[aria-checked='true'] {
+  background: #7a1f1a;
+  border-color: #7a1f1a;
+  color: #fff;
+}
+.pc-toggle {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 14px 0 4px;
+  font-size: 0.92rem;
+}
+.pc-toggle input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  accent-color: #7a1f1a;
+}
+.pc-fields {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+.pc-fields label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.pc-fields input,
+.pc-fields textarea {
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: italic 400 1.1rem "Old Standard TT", Georgia, serif;
+  resize: vertical;
+}
+.pc-send-bottom {
+  margin: 20px 0 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .snow {
+    display: none;
+  }
+}

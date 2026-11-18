@@ -50,9 +50,12 @@ def get(url, data=None, attempts=4):
             time.sleep(2 ** attempt)
 
 
-def commons(**params):
+def commons(post=False, **params):
     params.update(format="json", formatversion="2")
-    return json.loads(get(f"{COMMONS}?{urllib.parse.urlencode(params)}"))
+    body = urllib.parse.urlencode(params)
+    if post:  # длинные списки файлов не помещаются в адрес (HTTP 414)
+        return json.loads(get(COMMONS, data=body.encode()))
+    return json.loads(get(f"{COMMONS}?{body}"))
 
 
 def plain(text):
@@ -104,7 +107,7 @@ def commons_info(titles):
     out = []
     titles = sorted(titles)
     for i in range(0, len(titles), 40):
-        r = commons(action="query", titles="|".join(titles[i:i + 40]), prop="imageinfo|categories|coordinates",
+        r = commons(post=True, action="query", titles="|".join(titles[i:i + 40]), prop="imageinfo|categories|coordinates",
                     iiprop="url|extmetadata|size|mime", iiurlwidth=WIDTH, cllimit=500)
         for page in r.get("query", {}).get("pages", []):
             info = (page.get("imageinfo") or [{}])[0]
@@ -241,6 +244,7 @@ def main(city_id):
         except Exception as e:  # noqa: BLE001
             print(f"  не скачалось {c['id']}: {e}")
             continue
+        time.sleep(0.2)
         if c.get("lat") is not None:
             near = min(places, key=lambda p: dist_m(c["lat"], c["lon"], p["location"]["lat"], p["location"]["lon"]))
             c["near_place"] = near["id"]

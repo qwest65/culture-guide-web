@@ -87,6 +87,15 @@ try {
     await page.screenshot({ path: 'test-results/04-place.png', fullPage: true });
   });
 
+  await step('было и стало: ползунок и старый снимок', async () => {
+    await page.getByRole('heading', { name: 'Было и стало' }).waitFor();
+    const then = page.locator('.tn-then');
+    await then.waitFor();
+    if (!(await then.evaluate((img) => img.complete && img.naturalWidth > 0))) throw new Error('архивный снимок не загрузился');
+    await page.getByRole('button', { name: /Совместить с камерой/ }).waitFor();
+    await page.locator('.thennow').screenshot({ path: 'test-results/04b-thennow.png' });
+  });
+
   await step('рассказ объекта играет по кнопке', async () => {
     await page.getByRole('button', { name: /Слушать рассказ/ }).click();
     await page.getByRole('button', { name: /Остановить/ }).waitFor();

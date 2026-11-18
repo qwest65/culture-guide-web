@@ -90,10 +90,15 @@ export const Photo = z.object({
  * viewpoint — где встать, чтобы ракурс совпал.
  */
 export const ThenNow = z.object({
+  /** Архивный снимок (kind: archive). */
   then: Photo,
-  now: Photo,
-  viewpoint: LatLon,
+  /** Современный снимок с той же точки. Без него — первое фото места. */
+  now: Photo.optional(),
+  /** Где встать, чтобы ракурс совпал. */
+  viewpoint: LatLon.optional(),
   bearing: z.number().min(0).max(360).optional(),
+  /** Пара слов о том, что изменилось: «Ярмарочная площадь, ещё без сквера». */
+  note: z.string().max(200).optional(),
 });
 
 export const Editorial = z

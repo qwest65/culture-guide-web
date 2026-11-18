@@ -237,7 +237,9 @@ function Walk({ bundle, route }: { bundle: CityBundle; route: RouteData }) {
               {arrived.story.map((p, i) => (
                 <p key={i}>{p}</p>
               ))}
-              <a href={href.place(city.id, arrived.id)}>Карточка объекта: даты, люди, источники</a>
+              <a href={href.place(city.id, arrived.id)}>
+                {arrived.then_now.length > 0 ? '🕰 Было и стало — совместить с камерой' : 'Карточка объекта: даты, люди, источники'}
+              </a>
             </div>
             <button type="button" class="button button-primary" onClick={() => session.continueWalk()}>
               {view.finished ? 'Завершить' : 'Идём дальше'}

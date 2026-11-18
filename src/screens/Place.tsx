@@ -4,6 +4,7 @@ import { CATEGORY, HERITAGE, ROLE } from '../labels';
 import { href } from '../router';
 import { LoadError, Loading, NotFound, PageTitle, TopBar } from '../ui';
 import { ListenButton } from '../walk/ListenButton';
+import { ThenNow } from '../thennow/ThenNow';
 
 export function PlaceScreen({ city: cityId, id }: { city: string; id: string }) {
   const [data, retry] = useAsync(() => loadCity(cityId), [cityId]);
@@ -50,6 +51,8 @@ export function PlaceScreen({ city: cityId, id }: { city: string; id: string }) 
         {place.heritage && <p class="badge">{HERITAGE[place.heritage.level]}</p>}
 
         {place.audio && <ListenButton url={place.audio} />}
+
+        <ThenNow place={place} cityName={data.value.city.name} />
 
         <article class="story">
           {place.story.map((para, i) => (

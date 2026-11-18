@@ -110,7 +110,7 @@ export function buildCity(raw: RawCity): CityResult {
     byId.set(p.id, p);
     if (!inBBox(p.location, c.bbox)) report.errors.push(`${where} — координата вне района города (bbox)`);
     if (p.listen_at && !inBBox(p.listen_at, c.bbox)) report.errors.push(`${where} — listen_at вне района города`);
-    for (const ph of [...p.photos, ...p.then_now.flatMap((t) => [t.then, t.now])]) {
+    for (const ph of [...p.photos, ...p.then_now.flatMap((t) => (t.now ? [t.then, t.now] : [t.then]))]) {
       if (!/^https?:/.test(ph.src) && !(raw.publicExists ?? raw.fileExists)(ph.src)) report.errors.push(`${where} — нет файла фото public/${ph.src}`);
     }
     if (p.status === 'published') {

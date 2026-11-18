@@ -762,6 +762,7 @@ a.button {
   }
 }
 .tile {
+  position: relative;
   display: grid;
   gap: 2px;
   color: var(--ink);
@@ -843,4 +844,193 @@ a.button {
   .place-photo img {
     border-radius: 16px;
   }
+}
+
+/* ---------- Было и стало ---------- */
+
+.tile-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.6);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.tn-compare {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #222;
+  touch-action: pan-y;
+  user-select: none;
+  cursor: ew-resize;
+}
+.tn-compare img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.tn-then {
+  filter: sepia(0.15);
+}
+.tn-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  margin-left: -1.5px;
+  background: #fff;
+  box-shadow: 0 0 6px rgb(0 0 0 / 0.5);
+  pointer-events: none;
+}
+.tn-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  color: #1d1b18;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.4);
+}
+.tn-tag {
+  position: absolute;
+  bottom: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.6);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+.tn-tag-then {
+  left: 10px;
+}
+.tn-tag-now {
+  right: 10px;
+}
+.tn-range {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+.tn-range:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.tn-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  margin-top: 12px;
+}
+.tn-credit {
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.tn-camera {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: #000;
+  color: #fff;
+}
+.tn-video,
+.tn-ghost {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.tn-video {
+  object-fit: cover;
+}
+.tn-cam-hint {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 16px);
+  left: 64px;
+  right: 16px;
+  margin: 0;
+  font-size: 0.9rem;
+  text-shadow: 0 1px 4px #000;
+}
+.tn-cam-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px calc(env(safe-area-inset-bottom) + 20px);
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.7));
+}
+.tn-opacity {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+  font-size: 0.8rem;
+}
+.tn-shutter {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 5px solid #fff;
+  background: #c75b12;
+  cursor: pointer;
+}
+.tn-close {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 10px);
+  left: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  background: rgb(0 0 0 / 0.5);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.tn-cam-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+}
+.tn-result {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 60px 16px 120px;
+}
+.tn-result img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
 }

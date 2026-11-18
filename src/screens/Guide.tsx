@@ -137,6 +137,9 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
                     >
                       {!photo && <span class="tile-letter">{p.name.replace(/^[«"]/, '')[0]}</span>}
                     </span>
+                    {p.then_now.length > 0 && (
+                      <span class="tile-badge">🕰 {p.then_now[0].then.year ?? 'было/стало'}</span>
+                    )}
                     <span class="tile-name">{p.name}</span>
                     <span class="tile-sub">{CATEGORY[p.category]}</span>
                   </a>

@@ -1,0 +1,70 @@
+{
+  "voice": "ermil",
+  "files": {
+    "torgovye-ryady": {
+      "text_hash": "3884121a05fa",
+      "voice": "ermil",
+      "source": "Маленький караван: stopN_parent.mp3 (Яндекс SpeechKit, тот же текст)"
+    },
+    "passazh-yaushevykh": {
+      "text_hash": "cb7d8b6f70c1",
+      "voice": "ermil",
+      "source": "Маленький караван: stopN_parent.mp3 (Яндекс SpeechKit, тот же текст)"
+    },
+    "svyato-troitskiy-sobor": {
+      "text_hash": "21ca0c1e0a5d",
+      "voice": "ermil",
+      "source": "Маленький караван: stopN_parent.mp3 (Яндекс SpeechKit, тот же текст)"
+    },
+    "kamen-troitskoy-kreposti": {
+      "text_hash": "edfa92fb1d1f",
+      "voice": "ermil",
+      "source": "Маленький караван: stopN_parent.mp3 (Яндекс SpeechKit, тот же текст)"
+    },
+    "tsentralnaya-ploshchad": {
+      "text_hash": "00964a09ff70",
+      "voice": "ermil",
+      "source": "Маленький караван: stopN_parent.mp3 (Яндекс SpeechKit, тот же текст)"
+    },
+    "bronzovyy-verblyud": {
+      "text_hash": "17f6bfceda19",
+      "voice": "ermil",
+      "source": "Маленький караван: stopN_parent.mp3 (Яндекс SpeechKit, тот же текст)"
+    },
+    "skulptura-gorodovoy": {
+      "text_hash": "07caa4cbab5f",
+      "voice": "ermil",
+      "source": "Маленький караван: stopN_parent.mp3 (Яндекс SpeechKit, тот же текст)"
+    },
+    "pamyatnik-krylovu": {
+      "text_hash": "16343c672ac6",
+      "voice": "ermil",
+      "source": "Маленький караван: stopN_parent.mp3 (Яндекс SpeechKit, тот же текст)"
+    },
+    "gostinitsa-tsentralnaya": {
+      "text_hash": "8dc983cb1bb9",
+      "voice": "ermil",
+      "source": "Маленький караван: stopN_parent.mp3 (Яндекс SpeechKit, тот же текст)"
+    },
+    "kraevedcheskiy-muzey": {
+      "text_hash": "04e145bed91c",
+      "voice": "ermil"
+    },
+    "pamyatnik-plevako": {
+      "text_hash": "6823ab105df0",
+      "voice": "ermil"
+    },
+    "mechet-gataully-mully": {
+      "text_hash": "fd8df01d2fcd",
+      "voice": "ermil"
+    },
+    "vodonapornaya-bashnya": {
+      "text_hash": "ddb5368d634c",
+      "voice": "ermil"
+    },
+    "pamyatnik-neplyuevu": {
+      "text_hash": "4b280bf4cf2b",
+      "voice": "ermil"
+    }
+  }
+}

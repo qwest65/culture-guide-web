@@ -1,0 +1,13 @@
+# Настройки для хостинга на Apache (ISPmanager и подобные).
+# index.html и список городов перепроверяются при каждом открытии,
+# файлы с хэшем в имени (assets/*, data/<город>.<хэш>.json) кэшируются надолго.
+<IfModule mod_headers.c>
+  <FilesMatch "^(index\.html|cities\.json)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.[0-9a-zA-Z_-]{8,}\.(js|css|json)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+AddType application/manifest+json .webmanifest
+AddDefaultCharset utf-8

@@ -1,0 +1,45 @@
+{
+  "files": {
+    "start": {
+      "text_hash": "4cc53d132c88",
+      "voice": "ermil"
+    },
+    "turn_left": {
+      "text_hash": "975d62c8723c",
+      "voice": "ermil"
+    },
+    "turn_right": {
+      "text_hash": "e20523a12bcd",
+      "voice": "ermil"
+    },
+    "slight_left": {
+      "text_hash": "ebebf11a910c",
+      "voice": "ermil"
+    },
+    "slight_right": {
+      "text_hash": "a544b5897527",
+      "voice": "ermil"
+    },
+    "u_turn": {
+      "text_hash": "db6bb66a5a06",
+      "voice": "ermil"
+    },
+    "near": {
+      "text_hash": "4305e5440edb",
+      "voice": "ermil"
+    },
+    "off_route": {
+      "text_hash": "ff862974304e",
+      "voice": "ermil"
+    },
+    "next": {
+      "text_hash": "d95e4ec03346",
+      "voice": "ermil"
+    },
+    "finish": {
+      "text_hash": "4912167f9632",
+      "voice": "ermil"
+    }
+  },
+  "voice": "ermil"
+}

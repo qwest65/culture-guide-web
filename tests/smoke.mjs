@@ -151,7 +151,9 @@ try {
     await page.getByRole('link', { name: /Новогодняя открытка/ }).first().waitFor();
     await page.goto(`${BASE}#/troitsk`);
     await page.getByRole('link', { name: /Открытка из Троицка/ }).first().click();
-    await page.getByRole('radio', { name: 'Съ любовью изъ Троицка' }).waitFor();
+    await page.getByRole('radio', { name: 'Привѣтъ изъ Троицка!' }).waitFor();
+    if (await page.getByRole('radio', { name: 'Съ Новымъ годомъ!' }).count())
+      throw new Error('новогодний повод виден вне праздников');
     await page.locator('.pc-preview.ready').waitFor({ timeout: 15000 });
     await page.getByPlaceholder('Дорогой маме').fill('Дорогой маме');
     await page.waitForTimeout(400);

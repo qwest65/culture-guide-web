@@ -52,7 +52,7 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
   const postcardCard = postcardSrc && (
     <a class="winter-card" href={href.card(city.id)}>
       <span class="winter-card-img" style={{ backgroundImage: `url("${base + postcardSrc}")` }}>
-        <span class="winter-card-greet">{winter ? 'Съ Новымъ годомъ!' : `Съ любовью изъ ${city.name_genitive ?? city.name}`}</span>
+        <span class="winter-card-greet">{winter ? 'Съ Новымъ годомъ!' : `Привѣтъ изъ ${city.name_genitive ?? city.name}!`}</span>
       </span>
       <span class="winter-card-body">
         <b>{winter ? 'Новогодняя открытка' : 'Открытка'} из {city.name_genitive ?? city.name}</b>

@@ -1,8 +1,7 @@
 /**
  * «Открытка из Троицка» — на круглый год: выбрать вид (старая открытка, сегодняшнее фото или своё),
- * повод («С любовью из Троицка», «Помню, люблю, скучаю», «Ждём в гости!», «Многая лета!»,
- * «От всего сердца!», Новый год, Рождество), пожелание, кому и от кого —
- * и отправить. В праздники (15 декабря — 14 января) первым идёт «С Новым годом».
+ * подпись («Привет из Троицка!», «На добрую память», «Сердечный поклон»), пожелание, кому и от кого —
+ * и отправить. Новый год и Рождество — только в праздники (15 декабря — 14 января), тогда первым идёт «С Новым годом».
  */
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { CityBundle } from '../content/bundle';
@@ -19,17 +18,26 @@ const SITE = 'culture-guide.mooo.com';
 
 type View = { key: string; src: string; label: string; caption: string; archive: boolean; crop?: number };
 
-type Occasion = { key: string; old: string; modern: string; wishOld: string; wishModern: string; snow?: boolean };
+type Occasion = {
+  key: string;
+  old: string;
+  modern: string;
+  wishOld: string;
+  wishModern: string;
+  /** Только в праздники (15 декабря — 14 января): Новый год и Рождество, со снегом на фото. */
+  winter?: boolean;
+};
 
-/** Поводы. {from} — «изъ Троицка» / «из Троицка». */
+/**
+ * Поводы — подписи, какие действительно печатали на видовых открытках начала XX века.
+ * {from} — «изъ Троицка» / «из Троицка».
+ */
 const OCCASIONS: Occasion[] = [
-  { key: 'love', old: 'Съ любовью {from}', modern: 'С любовью {from}', wishOld: 'Здѣсь все такъ же дорого сердцу. Обнимаю!', wishModern: 'Здесь всё так же дорого сердцу. Обнимаю!' },
-  { key: 'remember', old: 'Помню, люблю, скучаю', modern: 'Помню, люблю, скучаю', wishOld: 'Пріѣзжай — пройдемся по старымъ улицамъ.', wishModern: 'Приезжай — пройдёмся по старым улицам.' },
-  { key: 'guests', old: 'Ждемъ въ гости!', modern: 'Ждём в гости!', wishOld: 'Самоваръ поставимъ, по городу погуляемъ.', wishModern: 'Самовар поставим, по городу погуляем.' },
-  { key: 'birthday', old: 'Многая лѣта!', modern: 'Многая лета!', wishOld: 'Съ днемъ рожденія! Здоровья, радости и тепла.', wishModern: 'С днём рождения! Здоровья, радости и тепла.' },
-  { key: 'heart', old: 'Отъ всего сердца!', modern: 'От всего сердца!', wishOld: 'Спасибо, что вы есть.', wishModern: 'Спасибо, что вы есть.' },
-  { key: 'ny', old: 'Съ Новымъ годомъ!', modern: 'С Новым годом!', wishOld: 'Счастья, тепла и добрыхъ встрѣчъ въ новомъ году!', wishModern: 'Счастья, тепла и добрых встреч в новом году!', snow: true },
-  { key: 'xmas', old: 'Съ Рождествомъ Христовымъ!', modern: 'С Рождеством!', wishOld: 'Мира, тепла и радости вашему дому!', wishModern: 'Мира, тепла и радости вашему дому!', snow: true },
+  { key: 'hello', old: 'Привѣтъ {from}!', modern: 'Привет {from}!', wishOld: 'Шлю видъ нашего города.', wishModern: 'Шлю вид нашего города.' },
+  { key: 'memory', old: 'На добрую память', modern: 'На добрую память', wishOld: 'Чтобы помнилось, гдѣ бы ты ни былъ.', wishModern: 'Чтобы помнилось, где бы ты ни был.' },
+  { key: 'bow', old: 'Сердечный поклонъ', modern: 'Сердечный поклон', wishOld: 'Помнимъ, ждемъ, пишите чаще.', wishModern: 'Помним, ждём, пишите чаще.' },
+  { key: 'ny', old: 'Съ Новымъ годомъ!', modern: 'С Новым годом!', wishOld: 'Счастья, тепла и добрыхъ встрѣчъ въ новомъ году!', wishModern: 'Счастья, тепла и добрых встреч в новом году!', winter: true },
+  { key: 'xmas', old: 'Съ Рождествомъ Христовымъ!', modern: 'С Рождеством!', wishOld: 'Мира, тепла и радости вашему дому!', wishModern: 'Мира, тепла и радости вашему дому!', winter: true },
 ];
 
 /** «Троицк» → «Троицкъ»: твёрдый знак после согласной на конце, как писали до 1918 года. */
@@ -55,6 +63,7 @@ function Postcard({ data }: { data: CityBundle }) {
   const genitive = city.name_genitive ?? city.name;
   const fromCity = (old: boolean) => `${old ? 'изъ' : 'из'} ${genitive}`;
   const holidays = isWinter();
+  const occasions = OCCASIONS.filter((o) => !o.winter || holidays);
   const views = useMemo<View[]>(() => {
     const old = places
       .filter((p) => p.then_now.length)
@@ -81,7 +90,7 @@ function Postcard({ data }: { data: CityBundle }) {
   const [view, setView] = useState<View>(views[0]);
   const [own, setOwn] = useState<View | null>(null);
   const [oldSpelling, setOldSpelling] = useState(true);
-  const [occ, setOcc] = useState<Occasion>(OCCASIONS.find((o) => o.key === (holidays ? 'ny' : 'love'))!);
+  const [occ, setOcc] = useState<Occasion>(occasions.find((o) => o.key === (holidays ? 'ny' : 'hello'))!);
   const greetingOf = (o: Occasion, old: boolean) => (old ? o.old : o.modern).replace('{from}', fromCity(old));
   const greeting = greetingOf(occ, oldSpelling);
   const [wish, setWish] = useState(occ.wishOld);
@@ -128,7 +137,7 @@ function Postcard({ data }: { data: CityBundle }) {
       from,
       header: oldSpelling ? `Гор. ${oldName(city.name)}` : `Город ${city.name}`,
       oldSpelling,
-      snow: !!occ.snow,
+      snow: !!occ.winter,
       site: `Культурный гид · ${SITE}`,
     });
     setReady(true);
@@ -224,7 +233,7 @@ function Postcard({ data }: { data: CityBundle }) {
 
         <h2 class="section-title">Повод</h2>
         <div class="pc-chips" role="radiogroup" aria-label="Повод">
-          {OCCASIONS.map((o) => (
+          {occasions.map((o) => (
             <button
               key={o.key}
               type="button"

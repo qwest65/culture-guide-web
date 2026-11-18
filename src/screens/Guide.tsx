@@ -36,6 +36,8 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
   }, [city.id]);
 
   const coverPhoto = photoOf(cover);
+  const coverThen = cover?.then_now[0]?.then;
+  const withPast = places.filter((p) => p.then_now.length && p.photos.length);
   return (
     <>
       <TopBar />
@@ -44,6 +46,15 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
           class={`hero${coverPhoto ? ' hero-photo' : ''}`}
           style={photoStyle(cover)}
         >
+          {coverThen && (
+            <div class="hero-then" style={{ backgroundImage: `url("${base + coverThen.src}")` }} aria-hidden="true" />
+          )}
+          {coverThen && (
+            <span class="hero-era" aria-hidden="true">
+              <span class="era-now">Сейчас</span>
+              <span class="era-then">{coverThen.year ?? 'Было'}</span>
+            </span>
+          )}
           <div class="hero-inner">
             {cities && cities.cities.length > 1 && (
               <nav class="city-switch" aria-label="Города">
@@ -73,6 +84,7 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
           {cover?.photos[0] && (
             <p class="hero-credit">
               {cover.name}. Фото: {cover.photos[0].author}, {cover.photos[0].license}
+              {coverThen && `; ${coverThen.caption}, ${coverThen.license}`}
             </p>
           )}
         </section>
@@ -90,6 +102,30 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
               <b>{places.filter((p) => p.audio).length}</b> рассказов голосом
             </li>
           </ul>
+
+          {withPast.length > 0 && (
+            <>
+              <h2 class="section-title">Окно в прошлое</h2>
+              <p class="section-lead">Сравните, каким город был сто лет назад. У места — наведите камеру и снимите своё «было/стало».</p>
+              <ul class="past-cards" role="list">
+                {withPast.map((p, i) => {
+                  const then = p.then_now[0].then;
+                  return (
+                    <li key={p.id}>
+                      <a class="past-card" href={href.place(city.id, p.id)}>
+                        <span class="past-img">
+                          <img src={base + p.photos[0].src} alt="" loading="lazy" style={{ objectPosition: p.photos[0].focus ?? 'center' }} />
+                          <img class="past-then" src={base + then.src} alt="" loading="lazy" style={{ animationDelay: `${(i % 4) * -1.6}s` }} />
+                          <span class="past-year">{then.year ?? 'Было'}</span>
+                        </span>
+                        <span class="past-name">{p.name}</span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
 
           <h2 class="section-title" id="routes">
             Маршруты

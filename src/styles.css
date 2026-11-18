@@ -1034,3 +1034,146 @@ a.button {
   max-height: 100%;
   border-radius: 8px;
 }
+
+/* ---------- Обложка: сейчас ↔ было ---------- */
+
+.hero {
+  overflow: hidden;
+}
+.hero-then {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: sepia(0.3) contrast(1.05);
+  opacity: 0;
+  animation: hero-past 16s ease-in-out infinite;
+}
+.hero-photo::before {
+  z-index: 1;
+}
+.hero-inner,
+.hero-credit {
+  z-index: 2;
+}
+.hero-era {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  display: grid;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.45);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.hero-era span {
+  grid-area: 1 / 1;
+}
+.era-now {
+  animation: era-now 16s ease-in-out infinite;
+}
+.era-then {
+  animation: era-then 16s ease-in-out infinite;
+}
+@keyframes hero-past {
+  0%, 35% { opacity: 0; transform: scale(1.06); }
+  45%, 80% { opacity: 1; transform: scale(1); }
+  90%, 100% { opacity: 0; transform: scale(1.06); }
+}
+@keyframes era-then {
+  0%, 38% { opacity: 0; }
+  45%, 80% { opacity: 1; }
+  87%, 100% { opacity: 0; }
+}
+@keyframes era-now {
+  0%, 38% { opacity: 1; }
+  45%, 80% { opacity: 0; }
+  87%, 100% { opacity: 1; }
+}
+
+/* ---------- Окно в прошлое: карточки, старое фото проявляется шторкой ---------- */
+
+.section-lead {
+  margin: -4px 0 12px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.past-cards {
+  list-style: none;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter) 8px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(78%, 300px);
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+}
+.past-cards li {
+  scroll-snap-align: start;
+}
+.past-card {
+  display: grid;
+  gap: 6px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.past-img {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #222;
+}
+.past-img img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.past-then {
+  filter: sepia(0.25);
+  animation: past-wipe 6.4s ease-in-out infinite;
+}
+.past-year {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.6);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.past-name {
+  font-weight: 600;
+}
+@keyframes past-wipe {
+  0%, 15% { clip-path: inset(0 100% 0 0); }
+  45%, 70% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(0 100% 0 0); }
+}
+
+.walk-postcard {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-then,
+  .era-now,
+  .era-then {
+    animation: none;
+  }
+  .past-then {
+    animation: none;
+    clip-path: inset(0 50% 0 0);
+  }
+}

@@ -10,6 +10,8 @@ import type { StopMark, WalkMap } from '../walk/map';
 import { player } from '../walk/player';
 import { WalkSession, type WalkView } from '../walk/session';
 import { takeAutostart } from '../walk/start';
+import { makeWalkCard } from '../thennow/walkCard';
+import { shareCard } from '../thennow/card';
 import { geoMessage } from '../walk/tracker';
 
 const TURN_WORD: Record<Turn, string> = {
@@ -248,7 +250,8 @@ function Walk({ bundle, route }: { bundle: CityBundle; route: RouteData }) {
         ) : view.finished ? (
           <div class="sheet-body">
             <h2 class="sheet-title">Маршрут пройден</h2>
-            <p class="note">Спасибо, что гуляли с нами.</p>
+            <p class="note">Спасибо, что гуляли с нами. Вот открытка на память — отправьте её тем, с кем пойдёте в следующий раз.</p>
+            <WalkPostcard session={session} cityName={city.name} />
             <a class="button button-primary" href={href.city(city.id)}>
               Другие маршруты
             </a>
@@ -276,5 +279,41 @@ function Walk({ bundle, route }: { bundle: CityBundle; route: RouteData }) {
         ) : null}
       </section>
     </div>
+  );
+}
+
+/** «Открытка прогулки» на финише: собирается сама, кнопка — поделиться. */
+function WalkPostcard({ session, cityName }: { session: WalkSession; cityName: string }) {
+  const [card, setCard] = useState<Blob | null>(null);
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    let made: string | null = null;
+    const visited = session.stops.filter((_, i) => session.view.done[i]);
+    makeWalkCard({
+      city: cityName,
+      route: session.route.title,
+      stops: visited.length ? visited : session.stops,
+      legs: session.legs,
+      distanceM: session.route.distance_m,
+    }).then((b) => {
+      if (!alive) return;
+      made = URL.createObjectURL(b);
+      setCard(b);
+      setUrl(made);
+    });
+    return () => {
+      alive = false;
+      if (made) URL.revokeObjectURL(made);
+    };
+  }, [session, cityName]);
+  if (!url) return <p class="note">Готовим открытку…</p>;
+  return (
+    <>
+      <img class="walk-postcard" src={url} alt={`Открытка прогулки «${session.route.title}»`} />
+      <button type="button" class="button button-primary" onClick={() => card && shareCard(card, `Моя прогулка: ${session.route.title}`, 'progulka.jpg')}>
+        ↗ Поделиться открыткой
+      </button>
+    </>
   );
 }

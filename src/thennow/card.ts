@@ -91,8 +91,8 @@ export async function makeCard(opts: {
 }
 
 /** Поделиться картинкой (телефон) или скачать её (компьютер). */
-export async function shareCard(card: Blob, title: string): Promise<void> {
-  const file = new File([card], 'bylo-stalo.jpg', { type: 'image/jpeg' });
+export async function shareCard(card: Blob, title: string, name = 'bylo-stalo.jpg'): Promise<void> {
+  const file = new File([card], name, { type: 'image/jpeg' });
   const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
   if (nav.share && nav.canShare?.({ files: [file] })) {
     try {
@@ -104,7 +104,7 @@ export async function shareCard(card: Blob, title: string): Promise<void> {
   }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(card);
-  a.download = 'bylo-stalo.jpg';
+  a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }

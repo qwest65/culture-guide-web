@@ -1249,9 +1249,10 @@ a.button {
   z-index: 1;
   left: 0;
   right: 0;
-  bottom: 12px;
+  bottom: 10px;
+  padding: 0 8px;
   font-size: 1rem !important;
-  white-space: nowrap;
+  line-height: 1.15 !important;
   text-align: center;
   color: #fff;
   font: 700 1.1rem "Old Standard TT", Georgia, serif;

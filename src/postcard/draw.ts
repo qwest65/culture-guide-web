@@ -1,7 +1,7 @@
 /**
- * Новогодняя открытка в духе русских открыток 1900-х: состаренная бумага, двойная рамка
- * с уголками-орнаментами, фото в золотой рамке под снегом, крупное поздравление шрифтом
- * с ятями, «Кому» и «Отъ кого» на линейках, как на обороте почтовой карточки.
+ * Открытка в духе русских открыток 1900-х: состаренная бумага, двойная рамка с уголками-орнаментами,
+ * «Гор. Троицкъ» вверху, фото в золотой рамке (под снегом — к Новому году и Рождеству), крупная
+ * надпись шрифтом с ятями, «Кому» и «Отъ кого» на линейках, как на обороте почтовой карточки.
  * 1080×1350 — хорошо смотрится в Telegram, MAX, ВКонтакте и в сторис.
  */
 import { OLD } from './fonts';
@@ -24,8 +24,12 @@ export type PostcardInput = {
   wish: string;
   to: string;
   from: string;
-  /** «Изъ Троицка» / «Из Троицка» */
-  fromCity: string;
+  /** Шапка: «Гор. Троицкъ» / «Город Троицк». */
+  header: string;
+  /** Подпись «Отъ кого» в старой орфографии. */
+  oldSpelling: boolean;
+  /** Снег на фото — к Новому году и Рождеству. */
+  snow: boolean;
   site: string;
   /** Зерно для снега и пятнышек бумаги — чтобы картинка не прыгала при каждом нажатии. */
   seed?: number;
@@ -163,7 +167,7 @@ export function drawPostcard(c: HTMLCanvasElement, p: PostcardInput): void {
   // «Изъ Троицка»
   g.fillStyle = BROWN;
   g.font = `400 34px ${OLD}`;
-  const head = p.fromCity.toUpperCase().split('').join(' ');
+  const head = p.header.toUpperCase().split('').join(' ');
   g.fillText(head, W / 2, 118);
   divider(g, W / 2, 140, 220);
 
@@ -190,14 +194,16 @@ export function drawPostcard(c: HTMLCanvasElement, p: PostcardInput): void {
   cover(g, p.photo, px, py, pw, ph, p.cropBottom ?? 0);
   g.filter = 'none';
   // зимний воздух: лёгкая дымка сверху и сугроб снизу
+  if (p.snow) {
   const air = g.createLinearGradient(0, py, 0, py + ph);
   air.addColorStop(0, 'rgba(225,235,245,0.18)');
   air.addColorStop(0.75, 'rgba(255,255,255,0)');
   air.addColorStop(1, 'rgba(255,255,255,0.55)');
   g.fillStyle = air;
   g.fillRect(px, py, pw, ph);
+  }
   // снег: хлопья разного размера, дальние — мельче и прозрачнее
-  for (let i = 0; i < 340; i++) {
+  for (let i = 0; i < (p.snow ? 340 : 0); i++) {
     const r = rand();
     const size = r < 0.7 ? 1.4 + rand() * 2.4 : 3.5 + rand() * 5;
     g.fillStyle = `rgba(255,255,255,${0.45 + rand() * 0.5})`;
@@ -207,7 +213,7 @@ export function drawPostcard(c: HTMLCanvasElement, p: PostcardInput): void {
   }
   g.strokeStyle = 'rgba(255,255,255,0.85)';
   g.lineWidth = 2;
-  for (let i = 0; i < 12; i++) flake(g, px + rand() * pw, py + rand() * ph * 0.8, 9 + rand() * 10);
+  for (let i = 0; i < (p.snow ? 12 : 0); i++) flake(g, px + rand() * pw, py + rand() * ph * 0.8, 9 + rand() * 10);
   g.restore();
 
   // Подпись к фото
@@ -241,8 +247,8 @@ export function drawPostcard(c: HTMLCanvasElement, p: PostcardInput): void {
   g.textAlign = 'left';
   const ly = H - 168;
   const rows: [string, string][] = [
-    [p.fromCity.startsWith('Изъ') ? 'Кому:' : 'Кому:', p.to],
-    [p.fromCity.startsWith('Изъ') ? 'Отъ кого:' : 'От кого:', p.from],
+    ['Кому:', p.to],
+    [p.oldSpelling ? 'Отъ кого:' : 'От кого:', p.from],
   ];
   rows.forEach(([label, value], i) => {
     const y = ly + i * 56;

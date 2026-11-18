@@ -37,8 +37,8 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
   const heroRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    if (winter) loadOldStandard();
-  }, [winter]);
+    loadOldStandard(); // шрифт с ятями — для карточки открытки
+  }, []);
 
   useEffect(() => {
     save('lastCity', city.id);
@@ -48,6 +48,20 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
   const coverPhoto = photoOf(cover);
   const coverThen = cover?.then_now[0]?.then;
   const withPast = places.filter((p) => p.then_now.length && p.photos.length);
+  const postcardSrc = withPast.find((p) => p.id === city.postcard_view)?.then_now[0].then.src ?? withPast[0]?.then_now[0].then.src;
+  const postcardCard = postcardSrc && (
+    <a class="winter-card" href={href.card(city.id)}>
+      <span class="winter-card-img" style={{ backgroundImage: `url("${base + postcardSrc}")` }}>
+        <span class="winter-card-greet">{winter ? 'Съ Новымъ годомъ!' : `Привѣтъ изъ ${city.name_genitive ?? city.name}!`}</span>
+      </span>
+      <span class="winter-card-body">
+        <b>{winter ? 'Новогодняя открытка' : 'Открытка'} из {city.name_genitive ?? city.name}</b>
+        <span>Старинный вид родного города и пара тёплых слов — маме, друзьям, тем, кто уехал далеко.</span>
+        <span class="city-open">Сделать открытку →</span>
+      </span>
+    </a>
+  );
+
   return (
     <>
       <TopBar />
@@ -127,18 +141,7 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
             </li>
           </ul>
 
-          {winter && withPast[0] && (
-            <a class="winter-card" href={href.card(city.id)}>
-              <span class="winter-card-img" style={{ backgroundImage: `url("${base + withPast.find((p) => p.id === city.postcard_view)?.then_now[0].then.src || base + withPast[0].then_now[0].then.src}")` }}>
-                <span class="winter-card-greet">Съ Новымъ годомъ!</span>
-              </span>
-              <span class="winter-card-body">
-                <b>Новогодняя открытка из {city.name_genitive ?? city.name}</b>
-                <span>Старинный вид родного города, ваше поздравление — и отправить маме, друзьям, тем, кто уехал далеко.</span>
-                <span class="city-open">Сделать открытку →</span>
-              </span>
-            </a>
-          )}
+          {winter && postcardCard}
 
           {withPast.length > 0 && (
             <>
@@ -163,6 +166,8 @@ export function Guide({ data, cities }: { data: CityBundle; cities?: CitiesIndex
               </ul>
             </>
           )}
+
+          {!winter && postcardCard}
 
           <h2 class="section-title" id="routes">
             Маршруты

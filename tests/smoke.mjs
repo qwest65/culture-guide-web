@@ -61,7 +61,7 @@ try {
     await page.goto(BASE);
     await page.getByRole('heading', { level: 1, name: 'Троицк' }).waitFor();
     await page.getByRole('button', { name: /Начать прогулку/ }).waitFor();
-    if ((await page.locator('.route-card').count()) !== 4) throw new Error('не 4 маршрута');
+    if ((await page.locator('.route-card').count()) !== 5) throw new Error('не 5 маршрутов');
     if ((await page.locator('.tile').count()) !== 14) throw new Error('не 14 мест');
     await page.screenshot({ path: 'test-results/01-home.png' });
     await page.locator('.places-map').scrollIntoViewIfNeeded();
@@ -146,9 +146,12 @@ try {
     await page.getByRole('button', { name: /Продолжить прогулку · место 3/ }).waitFor();
   });
 
-  await step('зима: новогодняя открытка собирается', async () => {
+  await step('открытка из Троицка собирается (обычный сезон и праздники)', async () => {
     await page.goto(`${ROOT}?winter=1#/troitsk`);
-    await page.getByRole('link', { name: /Новогодняя открытка/ }).first().click();
+    await page.getByRole('link', { name: /Новогодняя открытка/ }).first().waitFor();
+    await page.goto(`${BASE}#/troitsk`);
+    await page.getByRole('link', { name: /Открытка из Троицка/ }).first().click();
+    await page.getByRole('radio', { name: 'Привѣтъ изъ Троицка!' }).waitFor();
     await page.locator('.pc-preview.ready').waitFor({ timeout: 15000 });
     await page.getByPlaceholder('Дорогой маме').fill('Дорогой маме');
     await page.waitForTimeout(400);

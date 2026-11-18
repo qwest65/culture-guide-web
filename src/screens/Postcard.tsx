@@ -1,11 +1,12 @@
 /**
- * «Новогодняя открытка из Троицка»: выбрать вид (старая открытка, сегодняшнее фото или своё),
- * поздравление, пожелание, кому и от кого — и отправить.
+ * «Открытка из Троицка» — на круглый год: выбрать вид (старая открытка, сегодняшнее фото или своё),
+ * повод (привет, день рождения, праздник, «скучаю», Новый год, Рождество), пожелание, кому и от кого —
+ * и отправить. В праздники (15 декабря — 14 января) первым идёт «С Новым годом».
  */
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { CityBundle } from '../content/bundle';
 import { loadCity, useAsync } from '../data';
-import { newYear } from '../lib/season';
+import { isWinter } from '../lib/season';
 import { href } from '../router';
 import { LoadError, Loading, NotFound, PageTitle, TopBar } from '../ui';
 import { drawPostcard } from '../postcard/draw';
@@ -17,17 +18,20 @@ const SITE = 'culture-guide.mooo.com';
 
 type View = { key: string; src: string; label: string; caption: string; archive: boolean; crop?: number };
 
-/** «Из Троицка» — родительный падеж берётся из city.json (name_genitive). */
-const fromCityOf = (genitive: string, old: boolean) => `${old ? 'Изъ' : 'Из'} ${genitive}`;
+type Occasion = { key: string; old: string; modern: string; wishOld: string; wishModern: string; snow?: boolean };
 
-const GREETINGS = (year: number) => ({
-  old: ['Съ Новымъ годомъ!', 'Съ Рождествомъ Христовымъ!', `Съ Новымъ ${year} годомъ!`, 'Съ праздникомъ!'],
-  modern: ['С Новым годом!', 'С Рождеством!', `С Новым ${year} годом!`, 'С праздником!'],
-});
-const WISH = {
-  old: 'Счастья, тепла и добрыхъ встрѣчъ въ новомъ году!',
-  modern: 'Счастья, тепла и добрых встреч в новом году!',
-};
+/** Поводы. {from} — «изъ Троицка» / «из Троицка». */
+const OCCASIONS: Occasion[] = [
+  { key: 'privet', old: 'Привѣтъ {from}!', modern: 'Привет {from}!', wishOld: 'Тепла, радости и добрыхъ встрѣчъ!', wishModern: 'Тепла, радости и добрых встреч!' },
+  { key: 'birthday', old: 'Съ днемъ рожденія!', modern: 'С днём рождения!', wishOld: 'Здоровья, счастья и долгихъ лѣтъ!', wishModern: 'Здоровья, счастья и долгих лет!' },
+  { key: 'holiday', old: 'Съ праздникомъ!', modern: 'С праздником!', wishOld: 'Радости, тепла и добраго настроенія!', wishModern: 'Радости, тепла и доброго настроения!' },
+  { key: 'miss', old: 'Скучаю и жду встрѣчи!', modern: 'Скучаю и жду встречи!', wishOld: 'Пріѣзжай — пройдемся по старому городу.', wishModern: 'Приезжай — пройдёмся по старому городу.' },
+  { key: 'ny', old: 'Съ Новымъ годомъ!', modern: 'С Новым годом!', wishOld: 'Счастья, тепла и добрыхъ встрѣчъ въ новомъ году!', wishModern: 'Счастья, тепла и добрых встреч в новом году!', snow: true },
+  { key: 'xmas', old: 'Съ Рождествомъ Христовымъ!', modern: 'С Рождеством!', wishOld: 'Мира, тепла и радости вашему дому!', wishModern: 'Мира, тепла и радости вашему дому!', snow: true },
+];
+
+/** «Троицк» → «Троицкъ»: твёрдый знак после согласной на конце, как писали до 1918 года. */
+const oldName = (name: string) => (/[бвгджзклмнпрстфхцчшщ]$/i.test(name) ? `${name}ъ` : name);
 
 export function PostcardScreen({ city: cityId }: { city: string }) {
   const [data, retry] = useAsync(() => loadCity(cityId), [cityId]);
@@ -46,8 +50,9 @@ export function PostcardScreen({ city: cityId }: { city: string }) {
 
 function Postcard({ data }: { data: CityBundle }) {
   const { city, places } = data;
-  const fromCity = (_name: string, old: boolean) => fromCityOf(city.name_genitive ?? city.name, old);
-  const year = newYear();
+  const genitive = city.name_genitive ?? city.name;
+  const fromCity = (old: boolean) => `${old ? 'изъ' : 'из'} ${genitive}`;
+  const holidays = isWinter();
   const views = useMemo<View[]>(() => {
     const old = places
       .filter((p) => p.then_now.length)
@@ -74,9 +79,10 @@ function Postcard({ data }: { data: CityBundle }) {
   const [view, setView] = useState<View>(views[0]);
   const [own, setOwn] = useState<View | null>(null);
   const [oldSpelling, setOldSpelling] = useState(true);
-  const greetings = GREETINGS(year)[oldSpelling ? 'old' : 'modern'];
-  const [gIdx, setGIdx] = useState(0);
-  const [wish, setWish] = useState(WISH.old);
+  const [occ, setOcc] = useState<Occasion>(OCCASIONS.find((o) => o.key === (holidays ? 'ny' : 'privet'))!);
+  const greetingOf = (o: Occasion, old: boolean) => (old ? o.old : o.modern).replace('{from}', fromCity(old));
+  const greeting = greetingOf(occ, oldSpelling);
+  const [wish, setWish] = useState(occ.wishOld);
   const [wishEdited, setWishEdited] = useState(false);
   const [to, setTo] = useState('');
   const [from, setFrom] = useState('');
@@ -86,8 +92,8 @@ function Postcard({ data }: { data: CityBundle }) {
   const img = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
-    if (!wishEdited) setWish(oldSpelling ? WISH.old : WISH.modern);
-  }, [oldSpelling, wishEdited]);
+    if (!wishEdited) setWish(oldSpelling ? occ.wishOld : occ.wishModern);
+  }, [oldSpelling, wishEdited, occ]);
 
   const current = own ?? view;
 
@@ -114,11 +120,13 @@ function Postcard({ data }: { data: CityBundle }) {
       archive: current.archive,
       cropBottom: current.crop,
       caption: current.caption,
-      greeting: greetings[gIdx],
+      greeting,
       wish,
       to,
       from,
-      fromCity: fromCity(city.name, oldSpelling),
+      header: oldSpelling ? `Гор. ${oldName(city.name)}` : `Город ${city.name}`,
+      oldSpelling,
+      snow: !!occ.snow,
       site: `Культурный гид · ${SITE}`,
     });
     setReady(true);
@@ -133,12 +141,12 @@ function Postcard({ data }: { data: CityBundle }) {
     const t = setTimeout(redraw, 60);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gIdx, wish, to, from, oldSpelling, current]);
+  }, [occ, wish, to, from, oldSpelling, current]);
 
   const pickOwn = (file: File | undefined) => {
     if (!file) return;
     const url = URL.createObjectURL(file);
-    setOwn({ key: 'own', src: url, label: 'своё', caption: `${city.name}, зима ${year - 1} года`, archive: false });
+    setOwn({ key: 'own', src: url, label: 'своё', caption: city.name, archive: false });
   };
 
   const send = async () => {
@@ -148,7 +156,7 @@ function Postcard({ data }: { data: CityBundle }) {
       const blob = await new Promise<Blob>((res, rej) =>
         canvas.current!.toBlob((b) => (b ? res(b) : rej(new Error('canvas'))), 'image/jpeg', 0.9),
       );
-      await shareCard(blob, `${greetings[gIdx]} ${fromCity(city.name, false)}`, 'otkrytka.jpg');
+      await shareCard(blob, `Открытка ${fromCity(false)}`, 'otkrytka.jpg');
     } finally {
       setBusy(false);
     }
@@ -158,8 +166,11 @@ function Postcard({ data }: { data: CityBundle }) {
     <>
       <TopBar back={{ href: href.city(city.id), label: city.name }} />
       <main id="main" class="page postcard-page">
-        <PageTitle eyebrow="Новогодняя открытка">{fromCity(city.name, false)} — с любовью</PageTitle>
-        <p class="lead">Старинная открытка с видом родного города — для тех, кто рядом, и для тех, кто уехал далеко.</p>
+        <PageTitle eyebrow="Открытка в старинном стиле">Открытка {fromCity(false)}</PageTitle>
+        <p class="lead">
+          Как сто лет назад: вид родного города, пара тёплых слов — и отправить тем, кто рядом, и тем, кто уехал
+          далеко.
+        </p>
 
         <div class={`pc-preview${ready ? ' ready' : ''}`}>
           <canvas ref={canvas} role="img" aria-label="Предпросмотр открытки" />
@@ -209,17 +220,27 @@ function Postcard({ data }: { data: CityBundle }) {
           ))}
         </ul>
 
-        <h2 class="section-title">Поздравление</h2>
-        <div class="pc-chips" role="radiogroup" aria-label="Поздравление">
-          {greetings.map((t, i) => (
-            <button key={t} type="button" role="radio" aria-checked={i === gIdx} class="chip-btn" onClick={() => setGIdx(i)}>
-              {t}
+        <h2 class="section-title">Повод</h2>
+        <div class="pc-chips" role="radiogroup" aria-label="Повод">
+          {OCCASIONS.map((o) => (
+            <button
+              key={o.key}
+              type="button"
+              role="radio"
+              aria-checked={o.key === occ.key}
+              class="chip-btn"
+              onClick={() => {
+                setOcc(o);
+                setWishEdited(false);
+              }}
+            >
+              {greetingOf(o, oldSpelling)}
             </button>
           ))}
         </div>
         <label class="pc-toggle">
           <input type="checkbox" checked={oldSpelling} onChange={(e) => setOldSpelling((e.target as HTMLInputElement).checked)} />
-          <span>Старинная орфография — с ятями и твёрдыми знаками, как в 1911 году</span>
+          <span>Старинная орфография — с ятями и твёрдыми знаками, как на открытках 1911 года</span>
         </label>
 
         <div class="pc-fields">

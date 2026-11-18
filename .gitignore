@@ -8,3 +8,4 @@ __pycache__/
 *.pyc
 samples/
 photos-candidates/
+archive-candidates/

@@ -1,0 +1,41 @@
+name: Archive
+
+# Старые фото мест из открытых источников (Викисклад, PastVu) для «Окна в прошлое».
+# tools/fetch_archive.py собирает превью, candidates.json и контактные листы и кладёт их
+# в служебную ветку archive-candidates (в сайт они не попадают). Выбранные снимки редактор
+# переносит в public/photos/<город>/ и в поле then_now объекта.
+on:
+  push:
+    branches: ["claude/**"]
+    paths:
+      - "tools/fetch_archive.py"
+      - ".github/workflows/archive.yml"
+  workflow_dispatch:
+    inputs:
+      city:
+        description: "Город (папка в content/cities)"
+        type: string
+        default: "troitsk"
+
+permissions:
+  contents: write
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow
+      - name: Поиск
+        run: python3 tools/fetch_archive.py "${{ inputs.city || 'troitsk' }}"
+      - name: В ветку archive-candidates
+        run: |
+          cd archive-candidates
+          git init -q -b archive-candidates
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Кандидаты в архивные фото: ${{ inputs.city || 'troitsk' }}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" archive-candidates
